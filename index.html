@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peel-off</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+
+<style>
+  @font-face { font-family: 'Mieszkanie'; src: url('mieszkanie9.otf') format('opentype'); }
+  body { margin: 0; font-family: 'Mieszkanie', sans-serif !important; overflow: hidden; background-color: #000; letter-spacing: 0.15rem; }
+  .screen { position: absolute; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 10; }
+  #main, #loading { background: url("background.png") no-repeat center center; background-size: cover; }
+  .hidden { display: none !important; }
+  
+  #blink-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; opacity: 0; z-index: 200; pointer-events: none; transition: opacity 0.25s; }
+
+  .title { position: absolute; top: 8%; font-size: 80px; color: white; z-index: 20; letter-spacing: 0.4rem; font-family: 'Mieszkanie' !important; }
+  .custom-btn { padding: 18px 55px; font-family: 'Mieszkanie' !important; font-size: 28px; color: #333; border: none; border-radius: 15px; cursor: pointer; background: linear-gradient(145deg, #ffffff, #d1d1d1); box-shadow: 0 2px 1px #fff, 0 -2px 1px rgba(0,0,0,0.1); z-index: 100; letter-spacing: 0.2rem; }
+  #mainBtn { position: absolute; top: 45px; left: 45px; background: none; border: none; color: white; font-size: 32px; cursor: pointer; z-index: 110; font-family: 'Mieszkanie' !important; }
+  .arrow-btn { background: none; border: none; color: white; font-size: 60px; cursor: pointer; font-family: 'Mieszkanie' !important; }
+  
+  .guide-overlay { width: 420px; height: 420px; border: 3px dotted rgba(255,255,255,0.7); border-radius: 20px; position: relative; }
+  .guide-text { color: white; font-size: 24px; margin-bottom: 20px; font-family: 'Mieszkanie' !important; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+
+  .loader { display: flex; gap: 18px; margin-top: 50px; }
+  .loader span { width: 16px; height: 16px; background: white; border-radius: 50%; opacity: 0.3; animation: wave 1.4s infinite ease-in-out; }
+  .loader span:nth-child(1) { animation-delay: 0s; }
+  .loader span:nth-child(2) { animation-delay: 0.15s; }
+  .loader span:nth-child(3) { animation-delay: 0.3s; }
+  .loader span:nth-child(4) { animation-delay: 0.45s; }
+  .loader span:nth-child(5) { animation-delay: 0.6s; }
+
+  @keyframes wave {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
+    40% { transform: translateY(-25px) scale(1.3); opacity: 1; }
+  }
+
+  .slider { display: flex; align-items: center; gap: 70px; margin-top: 50px; }
+  .slide-img { width: 250px; height: 250px; object-fit: cover; opacity: 0.4; border-radius: 20px; }
+  .active { width: 350px; height: 350px; opacity: 1; box-shadow: 0 0 45px rgba(255,255,255,0.6); }
+  #selectBtn, #nextBtn, #peelBtn { position: absolute; bottom: 8%; }
+  #camera video { position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+  #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
+</style>
+</head>
+
+<body>
+<div id="blink-overlay"></div>
+
+<div id="main" class="screen">
+  <div class="title">Peel-off</div>
+  <div class="slider">
+    <button class="arrow-btn" onclick="prev()"><<</button>
+    <img id="img0" class="slide-img">
+    <img id="img1" class="slide-img active">
+    <img id="img2" class="slide-img">
+    <button class="arrow-btn" onclick="next()">>></button>
+  </div>
+  <button id="selectBtn" class="custom-btn" onclick="selectItem()">Select</button>
+</div>
+
+<div id="camera" class="screen hidden">
+  <video id="video" autoplay playsinline></video>
+  <button id="mainBtn" onclick="goHome()"><< Main</button>
+  <div id="guideContainer" class="screen" style="z-index: 2;">
+    <div class="guide-text">그림 카드를 점선 안에 맞춰주세요</div>
+    <div class="guide-overlay"></div>
+  </div>
+  <div id="canvas-container"></div>
+  <button id="nextBtn" class="custom-btn" onclick="show3DModel()">Next</button>
+  <button id="peelBtn" class="custom-btn hidden">Peel-off</button>
+</div>
+
+<div id="loading" class="screen hidden">
+  <div style="font-size: 35px; color: white; font-family: 'Mieszkanie' !important;">탈피 진행 중..</div>
+  <div class="loader">
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+</div>
+
+<script>
+const items = ["head", "ring", "reef", "shoes", "clam"];
+let current = 0;
+let scene, camera, renderer, controls, loader;
+let modelGroup;
+let normalModel, skinModel, oldModel;
+let stream = null;
+let pilePositions = []; 
+let mainLight; // 조명 강도 조절을 위해 전역으로 변경
+
+function initThree() {
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.set(0, 0, 10);
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  document.getElementById('canvas-container').appendChild(renderer.domElement);
+  
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+  scene.add(ambientLight);
+
+  mainLight = new THREE.DirectionalLight(0xffffff, 1.5);
+  mainLight.position.set(5, 10, 8); 
+  scene.add(mainLight);
+
+  const fillLight = new THREE.PointLight(0xffffff, 0.8);
+  fillLight.position.set(-5, 5, 5);
+  scene.add(fillLight);
+
+  const bounceLight = new THREE.PointLight(0xffffff, 0.6);
+  bounceLight.position.set(0, -5, 5);
+  scene.add(bounceLight);
+
+  modelGroup = new THREE.Group();
+  scene.add(modelGroup);
+
+  loader = new THREE.GLTFLoader();
+  const draco = new THREE.DRACOLoader();
+  draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.4.1/');
+  loader.setDRACOLoader(draco);
+
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  animate();
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  if (modelGroup.userData.autoRotate) modelGroup.rotation.y += 0.005;
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+function setOpacity(obj, val) {
+  if(!obj) return;
+  obj.traverse(n => {
+    if(n.isMesh) {
+      n.material.transparent = true;
+      n.material.opacity = val;
+    }
+  });
+}
+
+// 📍 광택 정도를 인자로 받아 세밀하게 조절 (roughness: 거칠기, metalness: 금속성)
+function setGlossy(obj, r = 0.45, m = 0.2) {
+  if(!obj) return;
+  obj.traverse(n => {
+    if(n.isMesh && n.material) {
+        n.material.roughness = r; 
+        n.material.metalness = m;
+    }
+  });
+}
+
+function updateSelection() {
+  const imgs = [document.getElementById("img0"), document.getElementById("img1"), document.getElementById("img2")];
+  for (let i = 0; i < 3; i++) {
+    let idx = (current + i - 1 + items.length) % items.length;
+    imgs[i].src = items[idx] + "_old.png";
+    imgs[i].classList.toggle("active", i === 1);
+  }
+}
+function prev() { current = (current - 1 + items.length) % items.length; updateSelection(); }
+function next() { current = (current + 1) % items.length; updateSelection(); }
+updateSelection();
+
+function selectItem() {
+  document.getElementById("main").classList.add("hidden");
+  document.getElementById("camera").classList.remove("hidden");
+  document.getElementById("guideContainer").classList.remove("hidden");
+  document.getElementById("nextBtn").classList.remove("hidden");
+  if (!stream) {
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+      .then(s => { stream = s; document.getElementById("video").srcObject = s; })
+      .catch(err => console.log(err));
+  }
+  if (!renderer) initThree();
+  clearScene();
+}
+
+function clearScene() {
+  while(modelGroup.children.length > 0) modelGroup.remove(modelGroup.children[0]);
+}
+
+function show3DModel() {
+  document.getElementById("guideContainer").classList.add("hidden");
+  document.getElementById("nextBtn").classList.add("hidden");
+  const name = items[current];
+  
+  // 📍 아이템별 세팅
+  const isShoes = (name === "shoes");
+  const isClam = (name === "clam");
+  const isRing = (name === "ring");
+  const isReef = (name === "reef");
+
+  // 📍 Reef일 때만 조명을 낮춤 (기본 1.5 -> 0.8)
+  mainLight.intensity = isReef ? 0.8 : 1.5;
+
+  loader.load(`${name}-v1.glb`, (g1) => {
+    normalModel = g1.scene;
+    normalModel.scale.set(3.7, 3.7, 3.7);
+    normalModel.visible = false; 
+    
+    if(isShoes) setOpacity(normalModel, 0.7); 
+    if(isClam) setGlossy(normalModel, 0.45, 0.2); // 은은한 조개
+    if(isRing) setGlossy(normalModel, 0.3, 0.4);  // 📍 반지는 조금 더 반짝이게
+    modelGroup.add(normalModel);
+
+    loader.load(`${name}_old-v1.glb`, (g2) => {
+      oldModel = g2.scene;
+      oldModel.scale.set(3.7, 3.7, 3.7);
+      oldModel.visible = true; 
+      modelGroup.add(oldModel);
+
+      loader.load(`${name}_skin-v1.glb`, (g3) => {
+        skinModel = g3.scene;
+        skinModel.scale.set(3.7, 3.7, 3.7);
+        skinModel.visible = false;
+        scene.add(skinModel); 
+        modelGroup.userData.autoRotate = true;
+        document.getElementById("peelBtn").classList.remove("hidden");
+        document.getElementById("peelBtn").onclick = startPeel;
+      });
+    });
+  });
+}
+
+function startPeel() {
+  const pBtn = document.getElementById("peelBtn");
+  pBtn.classList.add("hidden");
+  document.getElementById("loading").classList.remove("hidden");
+
+  setTimeout(() => {
+    document.getElementById("loading").classList.add("hidden");
+    modelGroup.userData.autoRotate = false;
+    skinModel.position.set(0, 0, 0);
+    skinModel.rotation.copy(modelGroup.rotation);
+    skinModel.visible = true;
+    setOpacity(skinModel, 0.6);
+    oldModel.visible = false;
+    normalModel.visible = true;
+
+    let sAlpha = 0.6;
+    let sPosY = 0;
+    const upAndFade = setInterval(() => {
+      sAlpha -= 0.008;
+      sPosY += 0.015;
+      skinModel.position.y = sPosY;
+      setOpacity(skinModel, sAlpha);
+      
+      if(sAlpha <= 0) {
+        clearInterval(upAndFade);
+        skinModel.visible = false;
+        
+        setTimeout(() => {
+          const overlay = document.getElementById('blink-overlay');
+          overlay.style.opacity = 1; 
+
+          setTimeout(() => {
+            normalModel.visible = false;
+            oldModel.visible = true;
+
+            loader.load(`${items[current]}_skin-v1.glb`, (g4) => {
+                const pile = g4.scene;
+                pile.scale.set(2.3, 2.3, 2.3); 
+
+                let targetX, targetZ;
+                let isSafe = false;
+                while(!isSafe) {
+                    targetX = (Math.random() - 0.5) * 10; 
+                    targetZ = (Math.random() - 0.5) * 8;
+                    const distFromCenter = Math.sqrt(targetX*targetX + targetZ*targetZ);
+                    if(distFromCenter > 4.2) isSafe = true; 
+                }
+
+                let targetY = -1.3; 
+                pilePositions.forEach(pos => {
+                    const dist = Math.sqrt(Math.pow(pos.x - targetX, 2) + Math.pow(pos.z - targetZ, 2));
+                    if(dist < 2.0) { 
+                        targetY += 0.45; 
+                        targetX += (Math.random() - 0.5) * 1.5;
+                    }
+                });
+
+                pilePositions.push({x: targetX, y: targetY, z: targetZ});
+                pile.position.set(targetX, targetY, targetZ);
+                pile.rotation.set(Math.PI / 1.9, Math.random() * Math.PI, (Math.random() - 0.5) * 0.8);
+                
+                scene.add(pile);
+                setOpacity(pile, 0.4);
+
+                let w = 0;
+                const shake = setInterval(() => {
+                  w += 0.15;
+                  pile.rotation.z += Math.sin(w) * 0.01;
+                  if(w > 5) clearInterval(shake);
+                }, 30);
+            });
+
+            overlay.style.opacity = 0; 
+            pBtn.classList.remove("hidden");
+          }, 350); 
+        }, 5000);
+      }
+    }, 30);
+  }, 2000); 
+}
+
+function goHome() { location.reload(); }
+</script>
+</body>
+</html>
