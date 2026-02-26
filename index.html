@@ -11,177 +11,41 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
 
 <style>
-  @font-face { 
-    font-family: 'Mieszkanie'; 
-    src: url('mieszkanie9.otf') format('opentype'); 
-  }
-
-  body { 
-    margin: 0; 
-    font-family: 'Mieszkanie', sans-serif !important; 
-    overflow: hidden; 
-    background-color: #000; 
-    letter-spacing: 0.15rem; 
-  }
-
-  .screen { 
-    position: absolute; 
-    width: 100%; 
-    height: 100%; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    flex-direction: column; 
-    z-index: 10; 
-  }
-
-  #main, #loading { 
-    background: url("background.png") no-repeat center center; 
-    background-size: cover; 
-  }
-
+  @font-face { font-family: 'Mieszkanie'; src: url('mieszkanie9.otf') format('opentype'); }
+  body { margin: 0; font-family: 'Mieszkanie', sans-serif !important; overflow: hidden; background-color: #000; letter-spacing: 0.15rem; }
+  .screen { position: absolute; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 10; }
+  #main, #loading { background: url("background.png") no-repeat center center; background-size: cover; }
   .hidden { display: none !important; }
+  
+  #blink-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; opacity: 0; z-index: 200; pointer-events: none; transition: opacity 0.25s; }
 
-  #blink-overlay { 
-    position: fixed; 
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 100%; 
-    background: black; 
-    opacity: 0; 
-    z-index: 200; 
-    pointer-events: none; 
-    transition: opacity 0.25s; 
-  }
+  .title { position: absolute; top: 15%; font-size: 80px; color: white; z-index: 20; letter-spacing: 0.4rem; font-family: 'Mieszkanie' !important; }
+  .custom-btn { padding: 18px 55px; font-family: 'Mieszkanie' !important; font-size: 28px; color: #333; border: none; border-radius: 15px; cursor: pointer; background: linear-gradient(145deg, #ffffff, #d1d1d1); box-shadow: 0 2px 1px #fff, 0 -2px 1px rgba(0,0,0,0.1); z-index: 100; letter-spacing: 0.2rem; }
+  #mainBtn { position: absolute; top: 45px; left: 45px; background: none; border: none; color: white; font-size: 32px; cursor: pointer; z-index: 110; font-family: 'Mieszkanie' !important; }
+  .arrow-btn { background: none; border: none; color: white; font-size: 60px; cursor: pointer; font-family: 'Mieszkanie' !important; }
+  
+  .guide-overlay { width: clamp(380px, 29vw, 520px); height: clamp(380px, 29vw, 520px); border: 3px dotted rgba(255,255,255,0.7); border-radius: 20px; position: relative; }
+  .guide-text { color: white; font-size: clamp(20px, 1.7vw, 28px); margin-bottom: 20px; font-family: 'Mieszkanie' !important; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
 
-  /* 🔥 타이틀 */
-  .title { 
-    position: absolute; 
-    top: 15%; 
-    font-size: clamp(48px, 5vw, 90px);
-    color: white; 
-    z-index: 20; 
-    letter-spacing: 0.4rem; 
-  }
-
-  /* 🔥 버튼 */
-  .custom-btn { 
-    padding: clamp(12px, 1vw, 20px) clamp(30px, 3vw, 60px); 
-    font-size: clamp(18px, 1.5vw, 28px); 
-    color: #333; 
-    border: none; 
-    border-radius: clamp(8px, 1vw, 15px); 
-    cursor: pointer; 
-    background: linear-gradient(145deg, #ffffff, #d1d1d1); 
-    box-shadow: 0 2px 1px #fff, 0 -2px 1px rgba(0,0,0,0.1); 
-    z-index: 100; 
-    letter-spacing: 0.2rem; 
-  }
-
-  #mainBtn { 
-    position: absolute; 
-    top: 3%; 
-    left: 3%; 
-    background: none; 
-    border: none; 
-    color: white; 
-    font-size: clamp(20px, 2vw, 32px); 
-    cursor: pointer; 
-    z-index: 110; 
-  }
-
-  .arrow-btn { 
-    background: none; 
-    border: none; 
-    color: white; 
-    font-size: clamp(40px, 4vw, 70px); 
-    cursor: pointer; 
-  }
-
-  /* 🔥 가이드 박스 */
-  .guide-overlay { 
-    width: clamp(380px, 29vw, 520px); 
-    height: clamp(380px, 29vw, 520px); 
-    border: 3px dotted rgba(255,255,255,0.7); 
-    border-radius: 20px; 
-    position: relative; 
-  }
-
-  .guide-text { 
-    color: white; 
-    font-size: clamp(20px, 1.7vw, 28px); 
-    margin-bottom: 20px; 
-    text-shadow: 0 0 10px rgba(0,0,0,0.5); 
-  }
-
-  /* 🔥 로더 */
-  .loader { 
-    display: flex; 
-    gap: clamp(10px, 1vw, 18px); 
-    margin-top: 5vh; 
-  }
-
-  .loader span { 
-    width: clamp(10px, 0.8vw, 16px); 
-    height: clamp(10px, 0.8vw, 16px); 
-    background: white; 
-    border-radius: 50%; 
-    opacity: 0.3; 
-    animation: wave 1.4s infinite ease-in-out; 
-  }
+  .loader { display: flex; gap: 18px; margin-top: 50px; }
+  .loader span { width: 16px; height: 16px; background: white; border-radius: 50%; opacity: 0.3; animation: wave 1.4s infinite ease-in-out; }
+  .loader span:nth-child(1) { animation-delay: 0s; }
+  .loader span:nth-child(2) { animation-delay: 0.15s; }
+  .loader span:nth-child(3) { animation-delay: 0.3s; }
+  .loader span:nth-child(4) { animation-delay: 0.45s; }
+  .loader span:nth-child(5) { animation-delay: 0.6s; }
 
   @keyframes wave {
     0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
-    40% { transform: translateY(-2vh) scale(1.3); opacity: 1; }
+    40% { transform: translateY(-25px) scale(1.3); opacity: 1; }
   }
 
-  /* 🔥 슬라이더 */
-  .slider { 
-    display: flex; 
-    align-items: center; 
-    gap: clamp(30px, 5vw, 80px); 
-    margin-top: 5vh; 
-  }
-
-  .slide-img { 
-    width: clamp(180px, 14vw, 280px); 
-    height: clamp(180px, 14vw, 280px); 
-    object-fit: cover; 
-    opacity: 0.4; 
-    border-radius: 20px; 
-  }
-
-  .active { 
-    width: clamp(260px, 20vw, 380px); 
-    height: clamp(260px, 20vw, 380px); 
-    opacity: 1; 
-    box-shadow: 0 0 45px rgba(255,255,255,0.6); 
-  }
-
-  #selectBtn, 
-  #nextBtn, 
-  #peelBtn { 
-    position: absolute; 
-    bottom: 8%; 
-  }
-
-  #camera video { 
-    position: absolute; 
-    width: 100%; 
-    height: 100%; 
-    object-fit: cover; 
-    z-index: 1; 
-  }
-
-  #canvas-container { 
-    position: absolute; 
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 100%; 
-    z-index: 5; 
-  }
+  .slider { display: flex; align-items: center; gap: 70px; margin-top: 50px; }
+  .slide-img { width: 250px; height: 250px; object-fit: cover; opacity: 0.4; border-radius: 20px; }
+  .active { width: 350px; height: 350px; opacity: 1; box-shadow: 0 0 45px rgba(255,255,255,0.6); }
+  #selectBtn, #nextBtn, #peelBtn { position: absolute; bottom: 8%; }
+  #camera video { position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+  #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
 </style>
 </head>
 
@@ -451,4 +315,4 @@ function startPeel() {
 function goHome() { location.reload(); }
 </script>
 </body>
-</html>
+</html> 
