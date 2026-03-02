@@ -9,51 +9,114 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
 <style>
   @font-face { font-family: 'Mieszkanie'; src: url('mieszkanie9.otf') format('opentype'); }
-  body { margin: 0; font-family: 'Mieszkanie', sans-serif !important; overflow: hidden; background-color: #000; letter-spacing: 0.15rem; }
+  
+  * { font-family: 'Mieszkanie', sans-serif !important; box-sizing: border-box; }
+
+  .system-font { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif !important;
+    font-weight: normal; 
+    letter-spacing: 0.02rem;
+  }
+
+  html { font-size: 1vw; } 
+
+  body { margin: 0; overflow: hidden; background-color: #000; letter-spacing: 0.15rem; }
   .screen { position: absolute; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 10; }
-  #main, #loading { background: url("background.png") no-repeat center center; background-size: cover; }
+  #main, #loading, #helpScreen { background: url("background.png") no-repeat center center; background-size: cover; }
   .hidden { display: none !important; }
   
   #blink-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; opacity: 0; z-index: 200; pointer-events: none; transition: opacity 0.25s; }
 
-  .title { position: absolute; top: 15%; font-size: 80px; color: white; z-index: 20; letter-spacing: 0.4rem; font-family: 'Mieszkanie' !important; }
-  .custom-btn { padding: 18px 55px; font-family: 'Mieszkanie' !important; font-size: 28px; color: #333; border: none; border-radius: 15px; cursor: pointer; background: linear-gradient(145deg, #ffffff, #d1d1d1); box-shadow: 0 2px 1px #fff, 0 -2px 1px rgba(0,0,0,0.1); z-index: 100; letter-spacing: 0.2rem; }
-  #mainBtn { position: absolute; top: 45px; left: 45px; background: none; border: none; color: white; font-size: 32px; cursor: pointer; z-index: 110; font-family: 'Mieszkanie' !important; }
-  .arrow-btn { background: none; border: none; color: white; font-size: 60px; cursor: pointer; font-family: 'Mieszkanie' !important; }
+  .title { position: absolute; top: 8%; font-size: clamp(40px, 6rem, 120px); color: white; z-index: 20; letter-spacing: 0.4rem; }
   
-  .guide-overlay { width: clamp(380px, 29vw, 520px); height: clamp(380px, 29vw, 520px); border: 3px dotted rgba(255,255,255,0.7); border-radius: 20px; position: relative; }
-  .guide-text { color: white; font-size: clamp(20px, 1.7vw, 28px); margin-bottom: 20px; font-family: 'Mieszkanie' !important; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+  .custom-btn { 
+    padding: 1.2rem 3.5rem; 
+    font-size: clamp(18px, 1.8rem, 36px); 
+    color: #333; border: none; border-radius: 1.5rem; 
+    cursor: pointer; background: linear-gradient(145deg, #ffffff, #d1d1d1); 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 100; letter-spacing: 0.2rem; 
+  }
+  
+  .peel-dash { display: inline-block; transform: scaleX(0.7); margin: 0 -0.2rem; }
 
-  .loader { display: flex; gap: 18px; margin-top: 50px; }
-  .loader span { width: 16px; height: 16px; background: white; border-radius: 50%; opacity: 0.3; animation: wave 1.4s infinite ease-in-out; }
-  .loader span:nth-child(1) { animation-delay: 0s; }
-  .loader span:nth-child(2) { animation-delay: 0.15s; }
-  .loader span:nth-child(3) { animation-delay: 0.3s; }
-  .loader span:nth-child(4) { animation-delay: 0.45s; }
-  .loader span:nth-child(5) { animation-delay: 0.6s; }
-
-  @keyframes wave {
-    0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
-    40% { transform: translateY(-25px) scale(1.3); opacity: 1; }
+  #helpBtn { 
+    position: absolute; top: 3rem; right: 3rem; 
+    width: 4rem; height: 4rem; 
+    border: 2px solid white; border-radius: 50%; 
+    color: white; background: none; 
+    font-size: 2.5rem; cursor: pointer; z-index: 200; 
+    display: flex; justify-content: center; align-items: center; 
+  }
+  
+  #helpScreen { z-index: 500; text-align: center; color: white; }
+  
+  .help-list { font-size: 1.8rem; list-style: none; padding: 0; line-height: 2.8; }
+  .help-list li { 
+    margin-bottom: 0.5rem; 
+    letter-spacing: 0.12rem; 
+    word-spacing: -0.22rem;  
   }
 
-  .slider { display: flex; align-items: center; gap: 70px; margin-top: 50px; }
-  .slide-img { width: 250px; height: 250px; object-fit: cover; opacity: 0.4; border-radius: 20px; }
-  .active { width: 350px; height: 350px; opacity: 1; box-shadow: 0 0 45px rgba(255,255,255,0.6); }
-  #selectBtn, #nextBtn, #peelBtn { position: absolute; bottom: 8%; }
-  #camera video { position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
-  #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
+  #mainBtn { position: absolute; top: 3rem; left: 3rem; background: none; border: none; color: white; font-size: 2.2rem; cursor: pointer; z-index: 110; }
+  .arrow-btn { background: none; border: none; color: white; font-size: 5rem; cursor: pointer; padding: 0 2rem; }
+  
+  .guide-overlay { width: 30vw; height: 30vw; max-width: 500px; max-height: 500px; border: 3px dotted rgba(255,255,255,0.7); border-radius: 2rem; position: relative; }
+  .guide-text { color: white; font-size: 1.8rem; margin-bottom: 2rem; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+
+  .loader { display: flex; gap: 1.2rem; margin-top: 4rem; }
+  .loader span { 
+    width: 1.2rem; height: 1.2rem; 
+    background: white; border-radius: 50%; 
+    opacity: 0.3; 
+    animation: wave 1.4s infinite ease-in-out; 
+  }
+  
+  .loader span:nth-child(2) { animation-delay: 0.2s; }
+  .loader span:nth-child(3) { animation-delay: 0.4s; }
+  .loader span:nth-child(4) { animation-delay: 0.6s; }
+  .loader span:nth-child(5) { animation-delay: 0.8s; }
+  
+  @keyframes wave {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
+    /* 📍 높이를 -2.5rem에서 -1.2rem으로 줄임 */
+    40% { transform: translateY(-1.2rem) scale(1.2); opacity: 1; }
+  }
+
+  .slider { display: flex; align-items: center; gap: 5vw; margin-top: 5vh; }
+  .slide-img { width: 18vw; height: 18vw; max-width: 300px; max-height: 300px; object-fit: cover; opacity: 0.4; border-radius: 1.5rem; transition: all 0.3s; }
+  .active { width: 25vw; height: 25vw; max-width: 450px; max-height: 450px; opacity: 1; box-shadow: 0 0 50px rgba(255,255,255,0.6); }
+  
+  #selectBtn, #peelBtn { position: absolute; bottom: 8%; }
+  
+  #camera video { position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: 1; transform: scaleX(-1); }
+  #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; pointer-events: auto; }
 </style>
 </head>
 
 <body>
 <div id="blink-overlay"></div>
 
+<button id="helpBtn" onclick="toggleHelp()">?</button>
+<div id="helpScreen" class="screen hidden">
+  <div style="width: 85%;">
+    <div style="font-size: 4rem; margin-bottom: 2rem;">How to Use</div>
+    <ul class="help-list">
+      <li><span class="system-font">1.</span> 화살표(<<, >>)를 클릭하여 이미지를 선택 후 Select 버튼을 누릅니다.</li>
+      <li><span class="system-font">2.</span> 선택한 이미지에 해당하는 그림 카드를 화면에 비춥니다.</li>
+      <li><span class="system-font">3.</span> <span class="system-font">3D</span> 이미지가 나오면 Peel<span class="peel-dash">-</span>off 버튼을 누릅니다.</li>
+      <li><span class="system-font">4.</span> 탈피가 끝나면 마우스로 돌려보며 새로워진 모습을 관찰합니다.</li>
+    </ul>
+    <button class="custom-btn" onclick="toggleHelp()" style="margin-top: 3rem;">Close</button>
+  </div>
+</div>
+
 <div id="main" class="screen">
-  <div class="title">Peel-off</div>
+  <div class="title">Peel<span class="peel-dash">-</span>off</div>
   <div class="slider">
     <button class="arrow-btn" onclick="prev()"><<</button>
     <img id="img0" class="slide-img">
@@ -65,57 +128,58 @@
 </div>
 
 <div id="camera" class="screen hidden">
-  <video id="video" autoplay playsinline></video>
+  <video id="video" autoplay playsinline muted></video>
   <button id="mainBtn" onclick="goHome()"><< Main</button>
   <div id="guideContainer" class="screen" style="z-index: 2;">
     <div class="guide-text">그림 카드를 점선 안에 맞춰주세요</div>
     <div class="guide-overlay"></div>
   </div>
   <div id="canvas-container"></div>
-  <button id="nextBtn" class="custom-btn" onclick="show3DModel()">Next</button>
-  <button id="peelBtn" class="custom-btn hidden">Peel-off</button>
+  <button id="peelBtn" class="custom-btn hidden">Peel<span class="peel-dash">-</span>off</button>
 </div>
 
 <div id="loading" class="screen hidden">
-  <div style="font-size: 35px; color: white; font-family: 'Mieszkanie' !important;">탈피가 진행 중입니다...</div>
-  <div class="loader">
-    <span></span><span></span><span></span><span></span><span></span>
-  </div>
+  <div style="font-size: 2.5rem; color: white;">탈피가 진행 중입니다...</div>
+  <div class="loader"><span></span><span></span><span></span><span></span><span></span></div>
 </div>
 
 <script>
 const items = ["head", "ring", "reef", "shoes", "clam"];
+const TM_URL = "https://teachablemachine.withgoogle.com/models/5_0zvz7Cz/";
+
 let current = 0;
 let scene, camera, renderer, controls, loader;
-let modelGroup;
+let modelGroup, mainLight;
 let normalModel, skinModel, oldModel;
 let stream = null;
 let pilePositions = []; 
-let mainLight; // 조명 강도 조절을 위해 전역으로 변경
+let tmModel, isRecognized = false;
+let recognitionCounter = 0;
+
+function toggleHelp() { document.getElementById("helpScreen").classList.toggle("hidden"); }
+
+async function setupAI() {
+  try {
+    tmModel = await tmImage.load(TM_URL + "model.json", TM_URL + "metadata.json");
+  } catch(e) { console.error("AI 로드 실패"); }
+}
+setupAI();
 
 function initThree() {
+  if (renderer) return; 
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
   camera.position.set(0, 0, 10);
+  
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
   document.getElementById('canvas-container').appendChild(renderer.domElement);
   
-  const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
-  scene.add(ambientLight);
-
+  scene.add(new THREE.AmbientLight(0xffffff, 1.0));
   mainLight = new THREE.DirectionalLight(0xffffff, 1.5);
   mainLight.position.set(5, 10, 8); 
   scene.add(mainLight);
-
-  const fillLight = new THREE.PointLight(0xffffff, 0.8);
-  fillLight.position.set(-5, 5, 5);
-  scene.add(fillLight);
-
-  const bounceLight = new THREE.PointLight(0xffffff, 0.6);
-  bounceLight.position.set(0, -5, 5);
-  scene.add(bounceLight);
 
   modelGroup = new THREE.Group();
   scene.add(modelGroup);
@@ -132,30 +196,36 @@ function initThree() {
 
 function animate() {
   requestAnimationFrame(animate);
-  if (modelGroup.userData.autoRotate) modelGroup.rotation.y += 0.005;
-  controls.update();
-  renderer.render(scene, camera);
+  if (modelGroup && modelGroup.userData.autoRotate) modelGroup.rotation.y += 0.005;
+  if (controls) controls.update();
+  if (renderer) renderer.render(scene, camera);
 }
 
-function setOpacity(obj, val) {
-  if(!obj) return;
-  obj.traverse(n => {
-    if(n.isMesh) {
-      n.material.transparent = true;
-      n.material.opacity = val;
+async function predictLoop() {
+  if (isRecognized) return;
+  const video = document.getElementById("video");
+  if (tmModel && video.readyState === 4) {
+    const prediction = await tmModel.predict(video);
+    const target = items[current] + "_old";
+    let found = false;
+    for (let i = 0; i < prediction.length; i++) {
+      if (prediction[i].className === target && prediction[i].probability > 0.85) {
+        found = true;
+        break;
+      }
     }
-  });
-}
-
-// 📍 광택 정도를 인자로 받아 세밀하게 조절 (roughness: 거칠기, metalness: 금속성)
-function setGlossy(obj, r = 0.45, m = 0.2) {
-  if(!obj) return;
-  obj.traverse(n => {
-    if(n.isMesh && n.material) {
-        n.material.roughness = r; 
-        n.material.metalness = m;
+    if (found) {
+      recognitionCounter++;
+      if (recognitionCounter > 25) {
+        isRecognized = true;
+        show3DModel();
+        return;
+      }
+    } else {
+      recognitionCounter = 0;
     }
-  });
+  }
+  requestAnimationFrame(predictLoop);
 }
 
 function updateSelection() {
@@ -174,42 +244,37 @@ function selectItem() {
   document.getElementById("main").classList.add("hidden");
   document.getElementById("camera").classList.remove("hidden");
   document.getElementById("guideContainer").classList.remove("hidden");
-  document.getElementById("nextBtn").classList.remove("hidden");
+  isRecognized = false;
+  recognitionCounter = 0; 
   if (!stream) {
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-      .then(s => { stream = s; document.getElementById("video").srcObject = s; })
-      .catch(err => console.log(err));
-  }
-  if (!renderer) initThree();
+      .then(s => { 
+        stream = s; 
+        const v = document.getElementById("video");
+        v.srcObject = s;
+        v.onloadedmetadata = () => { predictLoop(); };
+      });
+  } else { predictLoop(); }
+  initThree();
   clearScene();
 }
 
-function clearScene() {
-  while(modelGroup.children.length > 0) modelGroup.remove(modelGroup.children[0]);
+function clearScene() { if(modelGroup) while(modelGroup.children.length > 0) modelGroup.remove(modelGroup.children[0]); }
+
+function setOpacity(obj, val) {
+  if(!obj) return;
+  obj.traverse(n => { if(n.isMesh) { n.material.transparent = true; n.material.opacity = val; } });
 }
 
 function show3DModel() {
   document.getElementById("guideContainer").classList.add("hidden");
-  document.getElementById("nextBtn").classList.add("hidden");
   const name = items[current];
-  
-  // 📍 아이템별 세팅
-  const isShoes = (name === "shoes");
-  const isClam = (name === "clam");
-  const isRing = (name === "ring");
-  const isReef = (name === "reef");
-
-  // 📍 Reef일 때만 조명을 낮춤 (기본 1.5 -> 0.8)
-  mainLight.intensity = isReef ? 0.8 : 1.5;
+  mainLight.intensity = (name === "reef") ? 0.8 : 1.5;
 
   loader.load(`${name}-v1.glb`, (g1) => {
     normalModel = g1.scene;
     normalModel.scale.set(3.7, 3.7, 3.7);
     normalModel.visible = false; 
-    
-    if(isShoes) setOpacity(normalModel, 0.7); 
-    if(isClam) setGlossy(normalModel, 0.45, 0.2); // 은은한 조개
-    if(isRing) setGlossy(normalModel, 0.3, 0.4);  // 📍 반지는 조금 더 반짝이게
     modelGroup.add(normalModel);
 
     loader.load(`${name}_old-v1.glb`, (g2) => {
@@ -246,30 +311,23 @@ function startPeel() {
     oldModel.visible = false;
     normalModel.visible = true;
 
-    let sAlpha = 0.6;
-    let sPosY = 0;
+    let sAlpha = 0.6; let sPosY = 0;
     const upAndFade = setInterval(() => {
-      sAlpha -= 0.008;
-      sPosY += 0.015;
+      sAlpha -= 0.008; sPosY += 0.015;
       skinModel.position.y = sPosY;
       setOpacity(skinModel, sAlpha);
-      
       if(sAlpha <= 0) {
         clearInterval(upAndFade);
         skinModel.visible = false;
-        
         setTimeout(() => {
           const overlay = document.getElementById('blink-overlay');
           overlay.style.opacity = 1; 
-
           setTimeout(() => {
             normalModel.visible = false;
             oldModel.visible = true;
-
             loader.load(`${items[current]}_skin-v1.glb`, (g4) => {
                 const pile = g4.scene;
                 pile.scale.set(2.3, 2.3, 2.3); 
-
                 let targetX, targetZ;
                 let isSafe = false;
                 while(!isSafe) {
@@ -278,7 +336,6 @@ function startPeel() {
                     const distFromCenter = Math.sqrt(targetX*targetX + targetZ*targetZ);
                     if(distFromCenter > 4.2) isSafe = true; 
                 }
-
                 let targetY = -1.3; 
                 pilePositions.forEach(pos => {
                     const dist = Math.sqrt(Math.pow(pos.x - targetX, 2) + Math.pow(pos.z - targetZ, 2));
@@ -287,14 +344,11 @@ function startPeel() {
                         targetX += (Math.random() - 0.5) * 1.5;
                     }
                 });
-
                 pilePositions.push({x: targetX, y: targetY, z: targetZ});
                 pile.position.set(targetX, targetY, targetZ);
                 pile.rotation.set(Math.PI / 1.9, Math.random() * Math.PI, (Math.random() - 0.5) * 0.8);
-                
                 scene.add(pile);
                 setOpacity(pile, 0.4);
-
                 let w = 0;
                 const shake = setInterval(() => {
                   w += 0.15;
@@ -302,11 +356,11 @@ function startPeel() {
                   if(w > 5) clearInterval(shake);
                 }, 30);
             });
-
             overlay.style.opacity = 0; 
             pBtn.classList.remove("hidden");
           }, 350); 
-        }, 5000);
+          /* 📍 탈피 완료 후 대기 시간을 5000에서 3500으로 단축 */
+        }, 3500);
       }
     }, 30);
   }, 2000); 
@@ -315,4 +369,4 @@ function startPeel() {
 function goHome() { location.reload(); }
 </script>
 </body>
-</html> 
+</html>
