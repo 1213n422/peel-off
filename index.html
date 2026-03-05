@@ -200,27 +200,35 @@ function animate() {
   if (renderer) renderer.render(scene, camera);
 }
 
-/* 📍 인식 오류 방지를 위해 수정된 predictLoop */
+/* 📍 극도로 엄격하게 수정된 predictLoop */
 async function predictLoop() {
   if (isRecognized) return;
   const video = document.getElementById("video");
   if (tmModel && video.readyState === 4) {
     const prediction = await tmModel.predict(video);
     
-    // 가장 높은 확률을 가진 클래스 찾기
-    let highest = prediction.reduce((prev, curr) => (prev.probability > curr.probability) ? prev : curr);
+    // 가장 높은 확률값과 그 클래스 찾기
+    let highest = { className: "", probability: 0 };
+    for (let i = 0; i < prediction.length; i++) {
+      if (prediction[i].probability > highest.probability) {
+        highest = prediction[i];
+      }
+    }
+
     const target = items[current] + "_old";
     
-    // 현재 가장 높게 감지된 것이 타겟이고, 그 확률이 97% 이상일 때만 카운트
-    if (highest.className === target && highest.probability > 0.97) {
+    // 조건: 1. 가장 높은 확률의 클래스가 타겟일 것
+    //       2. 타겟의 확률이 0.999 이상일 것 (사실상 확신)
+    if (highest.className === target && highest.probability > 0.999) {
       recognitionCounter++;
-      // 안정적인 인식을 위해 카운트 30회 유지 (약 1초)
-      if (recognitionCounter > 30) {
+      // 약 2초(60프레임) 동안 완벽하게 유지되어야 인정
+      if (recognitionCounter > 60) {
         isRecognized = true;
         show3DModel();
         return;
       }
     } else {
+      // 조금이라도 확률이 흔들리면 즉시 카운트 초기화
       recognitionCounter = 0;
     }
   }
