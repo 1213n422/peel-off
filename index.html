@@ -55,7 +55,7 @@
   
   #helpScreen { z-index: 500; text-align: center; color: white; }
   
-  .help-list { font-size: 1.5rem; list-style: none; padding: 0; line-height: 2.8; }
+  .help-list { font-size: 1.5rem; list-style: none; padding: 0; line-height: 2.4; }
   .help-list li { 
     margin-bottom: 0.5rem; 
     letter-spacing: 0.12rem; 
@@ -109,6 +109,7 @@
       <li><span class="system-font">2.</span> 선택한 이미지에 해당하는 그림 카드를 화면에 비춥니다.</li>
       <li><span class="system-font">3.</span> <span class="system-font">3D</span> 이미지가 나오면 Peel<span class="peel-dash">-</span>off 버튼을 누릅니다.</li>
       <li><span class="system-font">4.</span> 탈피가 끝나면 마우스로 돌려보며 새로워진 모습을 관찰합니다.</li>
+      <li><span class="system-font">5.</span> 탈피를 반복하여 표피가 쌓여가는 것을 관찰합니다.</li>
     </ul>
     <button class="custom-btn" onclick="toggleHelp()" style="margin-top: 3rem;">Close</button>
   </div>
@@ -200,14 +201,12 @@ function animate() {
   if (renderer) renderer.render(scene, camera);
 }
 
-/* 📍 극도로 엄격하게 수정된 predictLoop */
 async function predictLoop() {
   if (isRecognized) return;
   const video = document.getElementById("video");
   if (tmModel && video.readyState === 4) {
     const prediction = await tmModel.predict(video);
     
-    // 가장 높은 확률값과 그 클래스 찾기
     let highest = { className: "", probability: 0 };
     for (let i = 0; i < prediction.length; i++) {
       if (prediction[i].probability > highest.probability) {
@@ -217,18 +216,14 @@ async function predictLoop() {
 
     const target = items[current] + "_old";
     
-    // 조건: 1. 가장 높은 확률의 클래스가 타겟일 것
-    //       2. 타겟의 확률이 0.999 이상일 것 (사실상 확신)
     if (highest.className === target && highest.probability > 0.999) {
       recognitionCounter++;
-      // 약 2초(60프레임) 동안 완벽하게 유지되어야 인정
       if (recognitionCounter > 60) {
         isRecognized = true;
         show3DModel();
         return;
       }
     } else {
-      // 조금이라도 확률이 흔들리면 즉시 카운트 초기화
       recognitionCounter = 0;
     }
   }
