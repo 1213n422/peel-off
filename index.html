@@ -319,9 +319,12 @@ function startPeel() {
     document.getElementById("loading").classList.add("hidden");
     modelGroup.userData.autoRotate = false;
     
-    // 각도 완벽 일치 보정
+    // 모델 본체와 표피 모두를 처음의 정면(GLOBAL_ROTATION) 상태로 강제 리셋
+    modelGroup.rotation.y = 0; // Group의 추가 회전을 초기화
+    
+    // skinModel도 처음 로드 시 설정한 GLOBAL_ROTATION 상태 그대로 정렬
     skinModel.position.set(0, 0, 0);
-    skinModel.rotation.set(0, modelGroup.rotation.y + GLOBAL_ROTATION, 0); 
+    skinModel.rotation.set(0, GLOBAL_ROTATION, 0); 
     
     skinModel.visible = true;
     setOpacity(skinModel, 0.6);
@@ -364,7 +367,6 @@ function startPeel() {
                 scene.add(pile);
                 setOpacity(pile, 0.4);
                 
-                // 흔들림 애니메이션 복구
                 let w = 0;
                 const shake = setInterval(() => {
                   w += 0.15;
