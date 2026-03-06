@@ -27,17 +27,17 @@
     font-style: normal;
   }
 
-  /* 도움말 본문 자간 살짝 늘림 (0.08rem) */
+  /* 1. 도움말 및 가이드 텍스트 자간 대폭 확대 (0.15rem) */
   .help-list li, .guide-text, #loading div {
     font-family: "Cute Font", sans-serif !important;
     font-weight: 400 !important;
-    letter-spacing: 0.08rem;
+    letter-spacing: 0.15rem; 
   }
 
   .eng-font {
     font-family: 'Mieszkanie', sans-serif !important;
     font-weight: normal !important;
-    letter-spacing: 0.05rem;
+    letter-spacing: 0.1rem;
   }
 
   html { font-size: 1vw; } 
@@ -71,32 +71,34 @@
   }
   
   #helpScreen { z-index: 500; text-align: center; color: white; }
-  .help-list { font-size: 1.8rem; list-style: none; padding: 0; line-height: 2.0; }
-  .help-list li { margin-bottom: 0.5rem; }
+  .help-list { font-size: 2.2rem; list-style: none; padding: 0; line-height: 2.2; }
+  .help-list li { margin-bottom: 0.8rem; }
 
   #mainBtn { position: absolute; top: 3rem; left: 3rem; background: none; border: none; color: white; font-size: 2.2rem; cursor: pointer; z-index: 110; }
   .arrow-btn { background: none; border: none; color: white; font-size: 5rem; cursor: pointer; padding: 0 2rem; }
   
   .guide-overlay { width: 40vw; height: 40vw; max-width: 650px; max-height: 650px; border: 3px dotted rgba(255,255,255,0.7); border-radius: 2rem; position: relative; }
-  /* 가이드 문구 크기 확대 (2.5rem) */
-  .guide-text { color: white; font-size: 2.5rem; margin-bottom: 2rem; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+  
+  /* 2. 가이드 문구 폰트 사이즈 키움 (3rem) */
+  .guide-text { color: white; font-size: 3rem; margin-bottom: 3rem; text-shadow: 0 0 15px rgba(0,0,0,0.8); }
 
-  /* 로딩 점 꿀렁거리는 모션 복구 */
-  .loader { display: flex; gap: 1.2rem; margin-top: 4rem; }
+  /* 3. 로딩 점 꿀렁거리는 모션 (Wave 효과) */
+  .loader { display: flex; gap: 1.5rem; margin-top: 4rem; }
   .loader span { 
-    width: 1.2rem; height: 1.2rem; 
+    width: 1.5rem; height: 1.5rem; 
     background: white; border-radius: 50%; 
     opacity: 0.3; 
-    animation: wave 1.4s infinite ease-in-out; 
+    animation: loading-wave 1.2s infinite ease-in-out; 
   }
-  .loader span:nth-child(2) { animation-delay: 0.2s; }
-  .loader span:nth-child(3) { animation-delay: 0.4s; }
-  .loader span:nth-child(4) { animation-delay: 0.6s; }
-  .loader span:nth-child(5) { animation-delay: 0.8s; }
+  /* 각 점에 시간차를 주어 순차적으로 꿀렁거리게 함 */
+  .loader span:nth-child(2) { animation-delay: 0.1s; }
+  .loader span:nth-child(3) { animation-delay: 0.2s; }
+  .loader span:nth-child(4) { animation-delay: 0.3s; }
+  .loader span:nth-child(5) { animation-delay: 0.4s; }
   
-  @keyframes wave {
+  @keyframes loading-wave {
     0%, 100% { transform: translateY(0); opacity: 0.3; }
-    40% { transform: translateY(-1.5rem); opacity: 1; }
+    50% { transform: translateY(-2rem); opacity: 1; scale: 1.2; }
   }
 
   .slider { display: flex; align-items: center; gap: 5vw; margin-top: 5vh; }
@@ -151,11 +153,14 @@
 </div>
 
 <div id="loading" class="screen hidden">
-  <div class="cute-font-regular" style="font-size: 2.5rem; color: white;">탈피가 진행 중입니다...</div>
-  <div class="loader"><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="cute-font-regular" style="font-size: 2.8rem; color: white; margin-bottom: 1rem;">탈피가 진행 중입니다...</div>
+  <div class="loader">
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
 </div>
 
 <script>
+// (스크립트 부분은 로직 변경이 없으므로 이전과 동일하게 유지됩니다)
 const items = ["head", "ring", "reef", "shoes", "clam"];
 const TM_URL = "https://teachablemachine.withgoogle.com/models/aJunoRGQ4/";
 const GLOBAL_ROTATION = -Math.PI / 2; 
@@ -317,8 +322,6 @@ function startPeel() {
   setTimeout(() => {
     document.getElementById("loading").classList.add("hidden");
     modelGroup.userData.autoRotate = false;
-    
-    // 정면(GLOBAL_ROTATION) 상태로 강제 리셋
     modelGroup.rotation.y = 0; 
     
     skinModel.position.set(0, 0, 0);
