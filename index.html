@@ -21,17 +21,24 @@
   
   * { font-family: 'Mieszkanie', sans-serif !important; box-sizing: border-box; }
 
-  /* 요청하신 얇은 스타일의 Cute Font 클래스 */
+  /* 얇은 스타일의 Cute Font 클래스 */
   .cute-font-regular {
     font-family: "Cute Font", sans-serif !important;
     font-weight: 400 !important;
     font-style: normal;
   }
 
-  /* 도움말 내 한글, 숫자, 3D 폰트 및 크기 조정 */
-  .help-list li, .help-list span, .guide-text, #loading div {
+  /* 도움말 및 가이드 텍스트 폰트 설정 */
+  .help-list li, .guide-text, #loading div {
     font-family: "Cute Font", sans-serif !important;
     font-weight: 400 !important;
+  }
+
+  /* 도움말 내부 영문 및 기호 전용 폰트 (Mieszkanie) */
+  .eng-font {
+    font-family: 'Mieszkanie', sans-serif !important;
+    font-weight: normal !important;
+    letter-spacing: 0.05rem;
   }
 
   .system-font { 
@@ -71,13 +78,8 @@
   }
   
   #helpScreen { z-index: 500; text-align: center; color: white; }
-  
-  /* 도움말 리스트 크기 및 줄간격 최적화 */
   .help-list { font-size: 1.8rem; list-style: none; padding: 0; line-height: 2.0; }
-  .help-list li { 
-    margin-bottom: 0.5rem; 
-    letter-spacing: 0.05rem; 
-  }
+  .help-list li { margin-bottom: 0.5rem; letter-spacing: 0.05rem; }
 
   #mainBtn { position: absolute; top: 3rem; left: 3rem; background: none; border: none; color: white; font-size: 2.2rem; cursor: pointer; z-index: 110; }
   .arrow-btn { background: none; border: none; color: white; font-size: 5rem; cursor: pointer; padding: 0 2rem; }
@@ -93,11 +95,6 @@
     animation: wave 1.4s infinite ease-in-out; 
   }
   
-  .loader span:nth-child(2) { animation-delay: 0.2s; }
-  .loader span:nth-child(3) { animation-delay: 0.4s; }
-  .loader span:nth-child(4) { animation-delay: 0.6s; }
-  .loader span:nth-child(5) { animation-delay: 0.8s; }
-  
   @keyframes wave {
     0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
     40% { transform: translateY(-1.2rem) scale(1.2); opacity: 1; }
@@ -108,7 +105,6 @@
   .active { width: 25vw; height: 25vw; max-width: 450px; max-height: 450px; opacity: 1; box-shadow: 0 0 50px rgba(255,255,255,0.6); }
   
   #selectBtn, #peelBtn { position: absolute; bottom: 8%; }
-  
   #camera video { position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: 1; transform: scaleX(-1); }
   #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; pointer-events: auto; }
 </style>
@@ -122,9 +118,9 @@
   <div style="width: 85%;">
     <div style="font-size: 4rem; margin-bottom: 2rem;">How to Use</div>
     <ul class="help-list">
-      <li><span class="cute-font-regular">1.</span> 화살표(<<, >>)를 클릭하여 이미지를 선택 후 Select 버튼을 누릅니다.</li>
+      <li><span class="cute-font-regular">1.</span> 화살표(<span class="eng-font">&lt;&lt;, &gt;&gt;</span>)를 클릭하여 이미지를 선택 후 <span class="eng-font">Select</span> 버튼을 누릅니다.</li>
       <li><span class="cute-font-regular">2.</span> 선택한 이미지에 해당하는 그림 카드를 화면에 비춥니다.</li>
-      <li><span class="cute-font-regular">3.</span> <span class="cute-font-regular">3D</span> 이미지가 나오면 Peel<span class="peel-dash">-</span>off 버튼을 누릅니다.</li>
+      <li><span class="cute-font-regular">3.</span> <span class="cute-font-regular">3D</span> 이미지가 나오면 <span class="eng-font">Peel-off</span> 버튼을 누릅니다.</li>
       <li><span class="cute-font-regular">4.</span> 탈피가 끝나면 마우스로 돌려보며 새로워진 모습을 관찰합니다.</li>
       <li><span class="cute-font-regular">5.</span> 탈피를 반복하여 표피가 쌓여가는 것을 관찰합니다.</li>
     </ul>
@@ -135,18 +131,18 @@
 <div id="main" class="screen">
   <div class="title">Peel<span class="peel-dash">-</span>off</div>
   <div class="slider">
-    <button class="arrow-btn" onclick="prev()"><<</button>
+    <button class="arrow-btn" onclick="prev()">&lt;&lt;</button>
     <img id="img0" class="slide-img">
     <img id="img1" class="slide-img active">
     <img id="img2" class="slide-img">
-    <button class="arrow-btn" onclick="next()">>></button>
+    <button class="arrow-btn" onclick="next()">&gt;&gt;</button>
   </div>
   <button id="selectBtn" class="custom-btn" onclick="selectItem()">Select</button>
 </div>
 
 <div id="camera" class="screen hidden">
   <video id="video" autoplay playsinline muted></video>
-  <button id="mainBtn" onclick="goHome()"><< Main</button>
+  <button id="mainBtn" onclick="goHome()">&lt;&lt; Main</button>
   <div id="guideContainer" class="screen" style="z-index: 2;">
     <div class="guide-text">그림 카드를 점선 안에 맞춰주세요</div>
     <div class="guide-overlay"></div>
@@ -163,6 +159,7 @@
 <script>
 const items = ["head", "ring", "reef", "shoes", "clam"];
 const TM_URL = "https://teachablemachine.withgoogle.com/models/aJunoRGQ4/";
+const GLOBAL_ROTATION = -Math.PI / 2; 
 
 let current = 0;
 let scene, camera, renderer, controls, loader;
@@ -223,16 +220,11 @@ async function predictLoop() {
   const video = document.getElementById("video");
   if (tmModel && video.readyState === 4) {
     const prediction = await tmModel.predict(video);
-    
     let highest = { className: "", probability: 0 };
     for (let i = 0; i < prediction.length; i++) {
-      if (prediction[i].probability > highest.probability) {
-        highest = prediction[i];
-      }
+      if (prediction[i].probability > highest.probability) highest = prediction[i];
     }
-
     const target = items[current] + "_old";
-    
     if (highest.className === target && highest.probability > 0.999) {
       recognitionCounter++;
       if (recognitionCounter > 60) {
@@ -293,25 +285,21 @@ function show3DModel() {
   loader.load(`${name}-v1.glb`, (g1) => {
     normalModel = g1.scene;
     normalModel.scale.set(3.7, 3.7, 3.7);
-    
-    // 모델 정면 보정: 기존 Math.PI / 2 가 옆면이었다면, -Math.PI / 2 또는 0 으로 정면 보정
-    // 사용하시는 모델 파일이 뒷면이 기본이라면 아래처럼 -Math.PI / 2 로 설정하여 180도 회전시킵니다.
-    normalModel.rotation.y = -Math.PI / 2; 
-    
+    normalModel.rotation.y = GLOBAL_ROTATION; 
     normalModel.visible = false; 
     modelGroup.add(normalModel);
 
     loader.load(`${name}_old-v1.glb`, (g2) => {
       oldModel = g2.scene;
       oldModel.scale.set(3.7, 3.7, 3.7);
-      oldModel.rotation.y = -Math.PI / 2; 
+      oldModel.rotation.y = GLOBAL_ROTATION; 
       oldModel.visible = true; 
       modelGroup.add(oldModel);
 
       loader.load(`${name}_skin-v1.glb`, (g3) => {
         skinModel = g3.scene;
         skinModel.scale.set(3.7, 3.7, 3.7);
-        skinModel.rotation.y = -Math.PI / 2; 
+        skinModel.rotation.y = GLOBAL_ROTATION; 
         skinModel.visible = false;
         scene.add(skinModel); 
         modelGroup.userData.autoRotate = true;
@@ -330,8 +318,11 @@ function startPeel() {
   setTimeout(() => {
     document.getElementById("loading").classList.add("hidden");
     modelGroup.userData.autoRotate = false;
+    
+    // 각도 완벽 일치 보정
     skinModel.position.set(0, 0, 0);
-    skinModel.rotation.copy(modelGroup.rotation);
+    skinModel.rotation.set(0, modelGroup.rotation.y + GLOBAL_ROTATION, 0); 
+    
     skinModel.visible = true;
     setOpacity(skinModel, 0.6);
     oldModel.visible = false;
@@ -365,16 +356,15 @@ function startPeel() {
                 let targetY = -1.3; 
                 pilePositions.forEach(pos => {
                     const dist = Math.sqrt(Math.pow(pos.x - targetX, 2) + Math.pow(pos.z - targetZ, 2));
-                    if(dist < 2.0) { 
-                        targetY += 0.45; 
-                        targetX += (Math.random() - 0.5) * 1.5;
-                    }
+                    if(dist < 2.0) { targetY += 0.45; targetX += (Math.random() - 0.5) * 1.5; }
                 });
                 pilePositions.push({x: targetX, y: targetY, z: targetZ});
                 pile.position.set(targetX, targetY, targetZ);
                 pile.rotation.set(Math.PI / 1.9, Math.random() * Math.PI, (Math.random() - 0.5) * 0.8);
                 scene.add(pile);
                 setOpacity(pile, 0.4);
+                
+                // 흔들림 애니메이션 복구
                 let w = 0;
                 const shake = setInterval(() => {
                   w += 0.15;
