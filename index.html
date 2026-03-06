@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Peel-off</title>
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cute+Font&family=Single+Day&display=swap" rel="stylesheet">
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -15,10 +19,19 @@
 <style>
   @font-face { font-family: 'Mieszkanie'; src: url('mieszkanie9.otf') format('opentype'); }
   
-  * { font-family: 'Mieszkanie', sans-serif !important; box-sizing: border-box; }
+  /* 기본 폰트 설정: 한글/숫자는 Cute Font, 영문은 Mieszkanie 우선 */
+  * { 
+    font-family: 'Mieszkanie', 'Cute Font', sans-serif !important; 
+    box-sizing: border-box; 
+  }
+
+  /* 숫자와 3D 글자 등을 위한 별도 클래스 (필요시 사용) */
+  .cute-font-style {
+    font-family: 'Cute Font', sans-serif !important;
+  }
 
   .system-font { 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif !important;
+    font-family: 'Cute Font', sans-serif !important; /* 시스템 폰트 대신 Cute Font 적용 */
     font-weight: normal; 
     letter-spacing: 0.02rem;
   }
@@ -51,22 +64,22 @@
     color: white; background: none; 
     font-size: 2.5rem; cursor: pointer; z-index: 200; 
     display: flex; justify-content: center; align-items: center; 
+    font-family: 'Cute Font', sans-serif !important;
   }
   
   #helpScreen { z-index: 500; text-align: center; color: white; }
   
-  .help-list { font-size: 1.5rem; list-style: none; padding: 0; line-height: 2.4; }
+  .help-list { font-size: 2.2rem; list-style: none; padding: 0; line-height: 2.4; } /* 가독성을 위해 폰트 크기 약간 키움 */
   .help-list li { 
     margin-bottom: 0.5rem; 
     letter-spacing: 0.12rem; 
-    word-spacing: -0.22rem;  
   }
 
   #mainBtn { position: absolute; top: 3rem; left: 3rem; background: none; border: none; color: white; font-size: 2.2rem; cursor: pointer; z-index: 110; }
   .arrow-btn { background: none; border: none; color: white; font-size: 5rem; cursor: pointer; padding: 0 2rem; }
   
   .guide-overlay { width: 40vw; height: 40vw; max-width: 650px; max-height: 650px; border: 3px dotted rgba(255,255,255,0.7); border-radius: 2rem; position: relative; }
-  .guide-text { color: white; font-size: 1.8rem; margin-bottom: 2rem; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+  .guide-text { color: white; font-size: 2.2rem; margin-bottom: 2rem; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
 
   .loader { display: flex; gap: 1.2rem; margin-top: 4rem; }
   .loader span { 
@@ -103,7 +116,7 @@
 <button id="helpBtn" onclick="toggleHelp()">?</button>
 <div id="helpScreen" class="screen hidden">
   <div style="width: 85%;">
-    <div style="font-size: 4rem; margin-bottom: 2rem;">How to Use</div>
+    <div style="font-size: 5rem; margin-bottom: 2rem;">How to Use</div>
     <ul class="help-list">
       <li><span class="system-font">1.</span> 화살표(<<, >>)를 클릭하여 이미지를 선택 후 Select 버튼을 누릅니다.</li>
       <li><span class="system-font">2.</span> 선택한 이미지에 해당하는 그림 카드를 화면에 비춥니다.</li>
@@ -139,11 +152,12 @@
 </div>
 
 <div id="loading" class="screen hidden">
-  <div style="font-size: 2.5rem; color: white;">탈피가 진행 중입니다...</div>
+  <div style="font-size: 3rem; color: white;">탈피가 진행 중입니다...</div>
   <div class="loader"><span></span><span></span><span></span><span></span><span></span></div>
 </div>
 
 <script>
+// (기존 변수 선언부 동일)
 const items = ["head", "ring", "reef", "shoes", "clam"];
 const TM_URL = "https://teachablemachine.withgoogle.com/models/aJunoRGQ4/";
 
@@ -201,21 +215,17 @@ function animate() {
   if (renderer) renderer.render(scene, camera);
 }
 
+// (predictLoop, updateSelection 등 로직 동일)
 async function predictLoop() {
   if (isRecognized) return;
   const video = document.getElementById("video");
   if (tmModel && video.readyState === 4) {
     const prediction = await tmModel.predict(video);
-    
     let highest = { className: "", probability: 0 };
     for (let i = 0; i < prediction.length; i++) {
-      if (prediction[i].probability > highest.probability) {
-        highest = prediction[i];
-      }
+      if (prediction[i].probability > highest.probability) highest = prediction[i];
     }
-
     const target = items[current] + "_old";
-    
     if (highest.className === target && highest.probability > 0.999) {
       recognitionCounter++;
       if (recognitionCounter > 60) {
@@ -223,9 +233,7 @@ async function predictLoop() {
         show3DModel();
         return;
       }
-    } else {
-      recognitionCounter = 0;
-    }
+    } else { recognitionCounter = 0; }
   }
   requestAnimationFrame(predictLoop);
 }
@@ -273,21 +281,28 @@ function show3DModel() {
   const name = items[current];
   mainLight.intensity = (name === "reef") ? 0.8 : 1.5;
 
+  // 정면을 바라보게 하기 위한 회전 값 설정 (대부분의 GLB 모델은 Y축 0 또는 PI가 정면입니다)
+  // 만약 90도 돌려져 있다면 Math.PI / 2 또는 -Math.PI / 2 로 조정하면 됩니다.
+  const initialRotationY = 0; 
+
   loader.load(`${name}-v1.glb`, (g1) => {
     normalModel = g1.scene;
     normalModel.scale.set(3.7, 3.7, 3.7);
+    normalModel.rotation.y = initialRotationY; // 정면 설정
     normalModel.visible = false; 
     modelGroup.add(normalModel);
 
     loader.load(`${name}_old-v1.glb`, (g2) => {
       oldModel = g2.scene;
       oldModel.scale.set(3.7, 3.7, 3.7);
+      oldModel.rotation.y = initialRotationY; // 정면 설정
       oldModel.visible = true; 
       modelGroup.add(oldModel);
 
       loader.load(`${name}_skin-v1.glb`, (g3) => {
         skinModel = g3.scene;
         skinModel.scale.set(3.7, 3.7, 3.7);
+        skinModel.rotation.y = initialRotationY; // 정면 설정
         skinModel.visible = false;
         scene.add(skinModel); 
         modelGroup.userData.autoRotate = true;
