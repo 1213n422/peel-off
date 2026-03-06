@@ -117,7 +117,6 @@
     .guide-overlay { width: 40vw; height: 40vw; max-width: 650px; max-height: 650px; border: 3px dotted rgba(255,255,255,0.7); border-radius: 2rem; position: relative; }
     .guide-text { color: white; font-size: 3rem; margin-bottom: 3rem; text-shadow: 0 0 15px rgba(0,0,0,0.8); }
 
-    /* 로딩 애니메이션 높이 조절 */
     .loader { display: flex; gap: 1.5rem; margin-top: 4rem; }
     .loader span { width: 1.5rem; height: 1.5rem; background: white; border-radius: 50%; animation: loading-wave 1.2s infinite ease-in-out; }
     .loader span:nth-child(2) { animation-delay: 0.1s; }
@@ -175,7 +174,7 @@
         <ul class="help-list">
             <li><span class="cute-font-regular">1.</span> 화살표(<span class="eng-font">&lt;&lt;, &gt;&gt;</span>)를 클릭하여 이미지를 선택 후 <span class="eng-font eng-spacing">Select</span> 버튼을 누릅니다.</li>
             <li><span class="cute-font-regular">2.</span> 선택한 이미지에 해당하는 그림 카드를 화면에 비춥니다.</li>
-            <li><span class="cute-font-regular">3.</span> <span>3D</span> 이미지가 나오면 <span class="eng-font eng-spacing">Peel-off</span> 버튼을 누릅니다.</li>
+            <li><span class="cute-font-regular">3.</span> 3D 이미지가 나오면 <span class="eng-font eng-spacing">Peel-off</span> 버튼을 누릅니다.</li>
             <li><span class="cute-font-regular">4.</span> 탈피가 끝나면 마우스로 돌려보며 새로워진 모습을 관찰합니다.</li>
             <li><span class="cute-font-regular">5.</span> 탈피를 반복하여 표피가 쌓여가는 것을 관찰합니다.</li>
         </ul>
@@ -214,7 +213,7 @@
 </div>
 
 <script>
-// ... (이하 자바스크립트 코드는 수정 사항이 없으므로 생략하나 원본과 동일하게 동작합니다)
+// (스크립트 부분은 기존과 동일하여 유지했습니다)
 const items = ["head", "ring", "reef", "shoes", "clam"];
 const TM_URL = "https://teachablemachine.withgoogle.com/models/aJunoRGQ4/";
 const GLOBAL_ROTATION = -Math.PI / 2; 
@@ -229,16 +228,11 @@ let tmModel, isRecognized = false;
 let recognitionCounter = 0;
 
 function toggleHelp() { document.getElementById("helpScreen").classList.toggle("hidden"); }
-
-function toggleInfo(type) {
-    const screen = document.getElementById(type + 'Screen');
-    screen.classList.toggle("hidden");
-}
+function toggleInfo(type) { document.getElementById(type + 'Screen').classList.toggle("hidden"); }
 
 async function setupAI() {
-    try {
-        tmModel = await tmImage.load(TM_URL + "model.json", TM_URL + "metadata.json");
-    } catch(e) { console.error("AI 로드 실패"); }
+    try { tmModel = await tmImage.load(TM_URL + "model.json", TM_URL + "metadata.json"); } 
+    catch(e) { console.error("AI 로드 실패"); }
 }
 setupAI();
 
@@ -247,25 +241,20 @@ function initThree() {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(0, 0, 10);
-    
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     document.getElementById('canvas-container').appendChild(renderer.domElement);
-    
     scene.add(new THREE.AmbientLight(0xffffff, 1.0));
     mainLight = new THREE.DirectionalLight(0xffffff, 1.5);
     mainLight.position.set(5, 10, 8); 
     scene.add(mainLight);
-
     modelGroup = new THREE.Group();
     scene.add(modelGroup);
-
     loader = new THREE.GLTFLoader();
     const draco = new THREE.DRACOLoader();
     draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.4.1/');
     loader.setDRACOLoader(draco);
-
     controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     animate();
@@ -295,9 +284,7 @@ async function predictLoop() {
                 show3DModel();
                 return;
             }
-        } else {
-            recognitionCounter = 0;
-        }
+        } else { recognitionCounter = 0; }
     }
     requestAnimationFrame(predictLoop);
 }
@@ -317,7 +304,6 @@ updateSelection();
 function selectItem() {
     document.getElementById("aboutBtn").classList.add("hidden");
     document.getElementById("toolsBtn").classList.add("hidden");
-    
     document.getElementById("main").classList.add("hidden");
     document.getElementById("camera").classList.remove("hidden");
     document.getElementById("guideContainer").classList.remove("hidden");
@@ -337,7 +323,6 @@ function selectItem() {
 }
 
 function clearScene() { if(modelGroup) while(modelGroup.children.length > 0) modelGroup.remove(modelGroup.children[0]); }
-
 function setOpacity(obj, val) {
     if(!obj) return;
     obj.traverse(n => { if(n.isMesh) { n.material.transparent = true; n.material.opacity = val; } });
@@ -347,21 +332,18 @@ function show3DModel() {
     document.getElementById("guideContainer").classList.add("hidden");
     const name = items[current];
     mainLight.intensity = (name === "reef") ? 0.8 : 1.5;
-
     loader.load(`${name}-v1.glb`, (g1) => {
         normalModel = g1.scene;
         normalModel.scale.set(3.7, 3.7, 3.7);
         normalModel.rotation.y = GLOBAL_ROTATION; 
         normalModel.visible = false; 
         modelGroup.add(normalModel);
-
         loader.load(`${name}_old-v1.glb`, (g2) => {
             oldModel = g2.scene;
             oldModel.scale.set(3.7, 3.7, 3.7);
             oldModel.rotation.y = GLOBAL_ROTATION; 
             oldModel.visible = true; 
             modelGroup.add(oldModel);
-
             loader.load(`${name}_skin-v1.glb`, (g3) => {
                 skinModel = g3.scene;
                 skinModel.scale.set(3.7, 3.7, 3.7);
@@ -381,22 +363,18 @@ function startPeel() {
     pBtn.classList.add("hidden");
     document.getElementById("helpBtn").classList.add("hidden");
     document.getElementById("loading").classList.remove("hidden");
-
     setTimeout(() => {
         document.getElementById("loading").classList.add("hidden");
         document.getElementById("helpBtn").classList.remove("hidden");
-        
         modelGroup.userData.autoRotate = false;
         modelGroup.rotation.y = 0; 
         normalModel.rotation.y = GLOBAL_ROTATION;
         skinModel.rotation.y = GLOBAL_ROTATION;
-        
         skinModel.position.set(0, 0, 0);
         skinModel.visible = true;
         setOpacity(skinModel, 0.6);
         oldModel.visible = false;
         normalModel.visible = true;
-
         let sAlpha = 0.6; let sPosY = 0;
         const upAndFade = setInterval(() => {
             sAlpha -= 0.008; sPosY += 0.015;
@@ -432,7 +410,6 @@ function startPeel() {
                                 pile.rotation.set(Math.PI / 1.9, Math.random() * Math.PI, (Math.random() - 0.5) * 0.8);
                                 scene.add(pile);
                                 setOpacity(pile, 0.4);
-                                
                                 let w = 0;
                                 const shake = setInterval(() => {
                                     w += 0.15;
