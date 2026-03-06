@@ -27,7 +27,7 @@
         font-style: normal;
     }
 
-    .help-list li, .guide-text, #loading div {
+    .help-list li, .guide-text, #loading div, .info-content p {
         font-family: "Cute Font", sans-serif !important;
         font-weight: 400 !important;
         letter-spacing: 0.15rem; 
@@ -58,7 +58,7 @@
         z-index: 10; 
     }
 
-    #main, #loading, #helpScreen { 
+    #main, #loading, #helpScreen, .info-screen { 
         background: url("background.png") no-repeat center center; 
         background-size: cover; 
     }
@@ -69,41 +69,45 @@
 
     .title { position: absolute; top: 8%; font-size: clamp(40px, 6rem, 120px); color: white; z-index: 20; letter-spacing: 0.4rem; }
     
-    /* 버튼 스타일 및 호버 효과 추가 */
     .custom-btn { 
         padding: 1.2rem 3.5rem; 
         font-size: clamp(18px, 1.8rem, 36px); 
         color: #333; border: none; border-radius: 1.5rem; 
         cursor: pointer; background: linear-gradient(145deg, #ffffff, #d1d1d1); 
         box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 100; letter-spacing: 0.2rem;
-        transition: transform 0.2s ease-out, box-shadow 0.2s ease-out; /* 부드러운 전환 */
+        transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
     }
 
     .custom-btn:hover {
-        transform: scale(1.1); /* 마우스 올리면 1.1배 확대 */
+        transform: scale(1.1);
         box-shadow: 0 8px 20px rgba(0,0,0,0.4);
     }
 
-    .custom-btn:active {
-        transform: scale(0.95); /* 클릭 시 살짝 눌림 */
-    }
-    
     .peel-dash { display: inline-block; transform: scaleX(0.7); margin: 0 -0.2rem; }
 
-    #helpBtn { 
-        position: absolute; top: 3rem; right: 3rem; 
-        width: 4rem; height: 4rem; 
-        border: 2px solid white; border-radius: 50%; 
+    /* 네비게이션 버튼 스타일 (상단 좌/우) */
+    .nav-btn { 
+        position: absolute; top: 3rem;
+        width: 6.5rem; height: 3.2rem; 
+        border: 1.5px solid white; border-radius: 2rem; 
         color: white; background: none; 
-        font-size: 2.5rem; cursor: pointer; z-index: 200; 
+        font-size: 1.4rem; cursor: pointer; z-index: 200; 
         display: flex; justify-content: center; align-items: center; 
-        transition: transform 0.2s;
+        transition: all 0.2s;
+        text-transform: uppercase;
     }
-    #helpBtn:hover { transform: scale(1.15); }
-    
-    #helpScreen { z-index: 500; text-align: center; color: white; background-color: rgba(0,0,0,0.9); }
-    .help-list { font-size: 2.2rem; list-style: none; padding: 0; line-height: 2.2; }
-    .help-list li { margin-bottom: 0.8rem; }
+    .nav-btn:hover { background: white; color: black; transform: scale(1.05); }
+
+    #aboutBtn { left: 3rem; }
+    #toolsBtn { left: 10.5rem; }
+    #helpBtn { right: 3rem; width: 4rem; height: 4rem; border-radius: 50%; font-size: 2.2rem; }
+
+    /* 정보 팝업 스크린 */
+    .info-screen { z-index: 600; text-align: center; color: white; background-color: rgba(0,0,0,0.92) !important; }
+    .info-content { width: 70%; max-width: 800px; }
+    .info-content h2 { font-size: 3.5rem; margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 1rem; }
+    .info-content p { font-size: 2rem; line-height: 1.8; margin-bottom: 1.5rem; word-break: keep-all; }
+    .tool-tag { display: inline-block; background: rgba(255,255,255,0.1); padding: 0.2rem 1rem; border-radius: 0.5rem; margin: 0.3rem; font-size: 1.6rem; }
 
     #mainBtn { position: absolute; top: 3rem; left: 3rem; background: none; border: none; color: white; font-size: 2.2rem; cursor: pointer; z-index: 110; }
     .arrow-btn { background: none; border: none; color: white; font-size: 5rem; cursor: pointer; padding: 0 2rem; transition: transform 0.2s; }
@@ -113,16 +117,7 @@
     .guide-text { color: white; font-size: 3rem; margin-bottom: 3rem; text-shadow: 0 0 15px rgba(0,0,0,0.8); }
 
     .loader { display: flex; gap: 1.5rem; margin-top: 4rem; }
-    .loader span { 
-        width: 1.5rem; height: 1.5rem; 
-        background: white; border-radius: 50%; 
-        opacity: 0.3; 
-        animation: loading-wave 1.2s infinite ease-in-out; 
-    }
-    .loader span:nth-child(2) { animation-delay: 0.1s; }
-    .loader span:nth-child(3) { animation-delay: 0.2s; }
-    .loader span:nth-child(4) { animation-delay: 0.3s; }
-    .loader span:nth-child(5) { animation-delay: 0.4s; }
+    .loader span { width: 1.5rem; height: 1.5rem; background: white; border-radius: 50%; opacity: 0.3; animation: loading-wave 1.2s infinite ease-in-out; }
     
     @keyframes loading-wave {
         0%, 100% { transform: translateY(0); opacity: 0.3; }
@@ -142,8 +137,34 @@
 <body>
 <div id="blink-overlay"></div>
 
-<button id="helpBtn" onclick="toggleHelp()">?</button>
-<div id="helpScreen" class="screen hidden">
+<div id="mainNav">
+    <button id="aboutBtn" class="nav-btn" onclick="toggleInfo('about')">About</button>
+    <button id="toolsBtn" class="nav-btn" onclick="toggleInfo('tools')">Tools</button>
+    <button id="helpBtn" class="nav-btn" onclick="toggleHelp()">?</button>
+</div>
+
+<div id="aboutScreen" class="screen info-screen hidden">
+    <div class="info-content">
+        <h2 class="eng-font">About the Work</h2>
+        <p>'Peel-off'는 탈피라는 생물학적 현상을 디지털 환경에서 재해석한 인터랙티브 미디어 아트입니다. 사용자는 실물 카드를 매개로 가상의 표피를 벗겨내며, 반복되는 재생성과 층층이 쌓여가는 흔적을 통해 시간의 흐름과 변화의 궤적을 목격합니다.</p>
+        <button class="custom-btn" onclick="toggleInfo('about')" style="margin-top: 2rem;">Back</button>
+    </div>
+</div>
+
+<div id="toolsScreen" class="screen info-screen hidden">
+    <div class="info-content">
+        <h2 class="eng-font">Technical Tools</h2>
+        <p>본 프로젝트는 다음과 같은 최신 기술들을 활용하여 제작되었습니다.</p>
+        <div style="margin-bottom: 2.5rem;">
+            <p><span class="eng-font">AI & Data:</span> <span class="tool-tag">Gemini (이미지/코드)</span> <span class="tool-tag">Teachable Machine</span></p>
+            <p><span class="eng-font">3D & Graphic:</span> <span class="tool-tag">Three.js</span> <span class="tool-tag">Tripo 3D</span> <span class="tool-tag">Blender</span></p>
+            <p><span class="eng-font">Development:</span> <span class="tool-tag">HTML5</span> <span class="tool-tag">CSS3</span> <span class="tool-tag">JavaScript (ES6+)</span></p>
+        </div>
+        <button class="custom-btn" onclick="toggleInfo('tools')">Back</button>
+    </div>
+</div>
+
+<div id="helpScreen" class="screen hidden" style="z-index: 700; background-color: rgba(0,0,0,0.9);">
     <div style="width: 85%;">
         <div style="font-size: 4rem; margin-bottom: 2rem;">How to Use</div>
         <ul class="help-list">
@@ -202,6 +223,12 @@ let tmModel, isRecognized = false;
 let recognitionCounter = 0;
 
 function toggleHelp() { document.getElementById("helpScreen").classList.toggle("hidden"); }
+
+// About, Tools 토글 함수
+function toggleInfo(type) {
+    const screen = document.getElementById(type + 'Screen');
+    screen.classList.toggle("hidden");
+}
 
 async function setupAI() {
     try {
@@ -283,6 +310,7 @@ function next() { current = (current + 1) % items.length; updateSelection(); }
 updateSelection();
 
 function selectItem() {
+    document.getElementById("mainNav").classList.add("hidden"); // 카메라 모드 시 정보 버튼 숨김
     document.getElementById("main").classList.add("hidden");
     document.getElementById("camera").classList.remove("hidden");
     document.getElementById("guideContainer").classList.remove("hidden");
