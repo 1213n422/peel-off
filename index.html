@@ -85,29 +85,34 @@
 
     .peel-dash { display: inline-block; transform: scaleX(0.7); margin: 0 -0.2rem; }
 
-    /* 네비게이션 버튼 스타일 (상단 좌/우) */
+    /* 상단 네비게이션 버튼 (점선 테두리 적용) */
     .nav-btn { 
         position: absolute; top: 3rem;
         width: 6.5rem; height: 3.2rem; 
-        border: 1.5px solid white; border-radius: 2rem; 
+        border: 1.5px dashed white; border-radius: 2rem; 
         color: white; background: none; 
         font-size: 1.4rem; cursor: pointer; z-index: 200; 
         display: flex; justify-content: center; align-items: center; 
         transition: all 0.2s;
         text-transform: uppercase;
     }
-    .nav-btn:hover { background: white; color: black; transform: scale(1.05); }
+    .nav-btn:hover { background: rgba(255,255,255,0.15); transform: scale(1.05); }
 
     #aboutBtn { left: 3rem; }
     #toolsBtn { left: 10.5rem; }
-    #helpBtn { right: 3rem; width: 4rem; height: 4rem; border-radius: 50%; font-size: 2.2rem; }
+    /* 도움말 버튼 크기 축소 및 점선 적용 */
+    #helpBtn { right: 3rem; width: 3.2rem; height: 3.2rem; border-radius: 50%; font-size: 1.8rem; }
 
     /* 정보 팝업 스크린 */
     .info-screen { z-index: 600; text-align: center; color: white; background-color: rgba(0,0,0,0.92) !important; }
     .info-content { width: 70%; max-width: 800px; }
-    .info-content h2 { font-size: 3.5rem; margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 1rem; }
-    .info-content p { font-size: 2rem; line-height: 1.8; margin-bottom: 1.5rem; word-break: keep-all; }
-    .tool-tag { display: inline-block; background: rgba(255,255,255,0.1); padding: 0.2rem 1rem; border-radius: 0.5rem; margin: 0.3rem; font-size: 1.6rem; }
+    .info-content h2 { font-size: 3.5rem; margin-bottom: 2rem; border-bottom: 1px dashed rgba(255,255,255,0.4); padding-bottom: 1rem; color: #ffffff; }
+    .info-content p { font-size: 2.3rem; line-height: 1.8; margin-bottom: 1.5rem; word-break: keep-all; color: #ffffff; }
+    .tool-tag { display: inline-block; background: rgba(255,255,255,0.1); padding: 0.2rem 1rem; border-radius: 0.5rem; margin: 0.3rem; font-size: 1.8rem; border: 1px dashed rgba(255,255,255,0.3); }
+
+    /* 도움말 리스트 텍스트 크기 키움 */
+    .help-list { font-size: 2.6rem; list-style: none; padding: 0; line-height: 2.2; color: #ffffff; }
+    .help-list li { margin-bottom: 1rem; }
 
     #mainBtn { position: absolute; top: 3rem; left: 3rem; background: none; border: none; color: white; font-size: 2.2rem; cursor: pointer; z-index: 110; }
     .arrow-btn { background: none; border: none; color: white; font-size: 5rem; cursor: pointer; padding: 0 2rem; transition: transform 0.2s; }
@@ -146,7 +151,7 @@
 <div id="aboutScreen" class="screen info-screen hidden">
     <div class="info-content">
         <h2 class="eng-font">About the Work</h2>
-        <p>'Peel-off'는 탈피라는 생물학적 현상을 디지털 환경에서 재해석한 인터랙티브 미디어 아트입니다. 사용자는 실물 카드를 매개로 가상의 표피를 벗겨내며, 반복되는 재생성과 층층이 쌓여가는 흔적을 통해 시간의 흐름과 변화의 궤적을 목격합니다.</p>
+        <p>'Peel-off'는 탈피라는 생물학적 현상을 디지털 환경에서 재해석한 인터랙티브 미디어 아트입니다. 사용자는 실물 카드를 매개로 가상의 공간에서 탈피를 체험하며, 이 과정을 반복함으로써 시간의 흐름과 변화의 순간을 관찰합니다.</p>
         <button class="custom-btn" onclick="toggleInfo('about')" style="margin-top: 2rem;">Back</button>
     </div>
 </div>
@@ -154,19 +159,19 @@
 <div id="toolsScreen" class="screen info-screen hidden">
     <div class="info-content">
         <h2 class="eng-font">Technical Tools</h2>
-        <p>본 프로젝트는 다음과 같은 최신 기술들을 활용하여 제작되었습니다.</p>
+        <p>본 프로젝트는 다음과 같은 기술들을 활용하여 제작되었습니다.</p>
         <div style="margin-bottom: 2.5rem;">
-            <p><span class="eng-font">AI & Data:</span> <span class="tool-tag">Gemini (이미지/코드)</span> <span class="tool-tag">Teachable Machine</span></p>
-            <p><span class="eng-font">3D & Graphic:</span> <span class="tool-tag">Three.js</span> <span class="tool-tag">Tripo 3D</span> <span class="tool-tag">Blender</span></p>
-            <p><span class="eng-font">Development:</span> <span class="tool-tag">HTML5</span> <span class="tool-tag">CSS3</span> <span class="tool-tag">JavaScript (ES6+)</span></p>
+            <p><span class="eng-font">AI & Data:</span> <span class="tool-tag">Gemini</span> <span class="tool-tag">Teachable Machine</span></p>
+            <p><span class="eng-font">3D & Graphic:</span> <span class="tool-tag">Three.js</span> <span class="tool-tag">Tripo 3D</span></p>
+            <p><span class="eng-font">Development:</span> <span class="tool-tag">HTML5 / CSS3</span> <span class="tool-tag">p5.js</span></p>
         </div>
         <button class="custom-btn" onclick="toggleInfo('tools')">Back</button>
     </div>
 </div>
 
-<div id="helpScreen" class="screen hidden" style="z-index: 700; background-color: rgba(0,0,0,0.9);">
+<div id="helpScreen" class="screen hidden" style="z-index: 700; background-color: rgba(0,0,0,0.95);">
     <div style="width: 85%;">
-        <div style="font-size: 4rem; margin-bottom: 2rem;">How to Use</div>
+        <div style="font-size: 4.5rem; margin-bottom: 2.5rem; color: #ffffff;">How to Use</div>
         <ul class="help-list">
             <li><span class="cute-font-regular">1.</span> 화살표(<span class="eng-font">&lt;&lt;, &gt;&gt;</span>)를 클릭하여 이미지를 선택 후 <span class="eng-font eng-spacing">Select</span> 버튼을 누릅니다.</li>
             <li><span class="cute-font-regular">2.</span> 선택한 이미지에 해당하는 그림 카드를 화면에 비춥니다.</li>
@@ -174,7 +179,7 @@
             <li><span class="cute-font-regular">4.</span> 탈피가 끝나면 마우스로 돌려보며 새로워진 모습을 관찰합니다.</li>
             <li><span class="cute-font-regular">5.</span> 탈피를 반복하여 표피가 쌓여가는 것을 관찰합니다.</li>
         </ul>
-        <button class="custom-btn" onclick="toggleHelp()" style="margin-top: 3rem;">Close</button>
+        <button class="custom-btn" onclick="toggleHelp()" style="margin-top: 3.5rem;">Close</button>
     </div>
 </div>
 
@@ -224,7 +229,6 @@ let recognitionCounter = 0;
 
 function toggleHelp() { document.getElementById("helpScreen").classList.toggle("hidden"); }
 
-// About, Tools 토글 함수
 function toggleInfo(type) {
     const screen = document.getElementById(type + 'Screen');
     screen.classList.toggle("hidden");
@@ -310,7 +314,7 @@ function next() { current = (current + 1) % items.length; updateSelection(); }
 updateSelection();
 
 function selectItem() {
-    document.getElementById("mainNav").classList.add("hidden"); // 카메라 모드 시 정보 버튼 숨김
+    document.getElementById("mainNav").classList.add("hidden");
     document.getElementById("main").classList.add("hidden");
     document.getElementById("camera").classList.remove("hidden");
     document.getElementById("guideContainer").classList.remove("hidden");
