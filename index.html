@@ -12,28 +12,32 @@
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cute+Font&display=swap" rel="stylesheet">
-
 <style>
+  @font-face {
+      font-family: 'OG_Renaissance_Secret-Rg';
+      src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2403-2@1.0/OG_Renaissance_Secret-Rg.woff2') format('woff2');
+      font-weight: normal;
+      font-style: normal;
+  }
+
   @font-face { font-family: 'Mieszkanie'; src: url('mieszkanie9.otf') format('opentype'); }
   
   * { font-family: 'Mieszkanie', sans-serif !important; box-sizing: border-box; }
 
+  /* 2. 기존 cute-font 클래스에 새 폰트 적용 */
   .cute-font-regular {
-    font-family: "Cute Font", sans-serif !important;
+    font-family: 'OG_Renaissance_Secret-Rg', sans-serif !important;
     font-weight: 400 !important;
     font-style: normal;
   }
 
+  /* 도움말 및 가이드 텍스트 자간 설정 */
   .help-list li, .guide-text, #loading div {
-    font-family: "Cute Font", sans-serif !important;
+    font-family: 'OG_Renaissance_Secret-Rg', sans-serif !important;
     font-weight: 400 !important;
-    letter-spacing: 0.15rem; 
+    letter-spacing: 0.1rem; 
   }
 
-  /* 도움말 내 Select, Peel-off 등 특정 영문 자간 강조 */
   .eng-spacing {
     letter-spacing: 0.3rem !important;
     font-weight: bold;
@@ -119,7 +123,7 @@
 <button id="helpBtn" onclick="toggleHelp()">?</button>
 <div id="helpScreen" class="screen hidden">
   <div style="width: 85%;">
-    <div style="font-size: 4rem; margin-bottom: 2rem;">How to Use</div>
+    <div style="font-size: 4rem; margin-bottom: 2rem;" class="cute-font-regular">How to Use</div>
     <ul class="help-list">
       <li><span class="cute-font-regular">1.</span> 화살표(<span class="eng-font">&lt;&lt;, &gt;&gt;</span>)를 클릭하여 이미지를 선택 후 <span class="eng-font eng-spacing">Select</span> 버튼을 누릅니다.</li>
       <li><span class="cute-font-regular">2.</span> 선택한 이미지에 해당하는 그림 카드를 화면에 비춥니다.</li>
@@ -162,6 +166,7 @@
 </div>
 
 <script>
+// (이전 스크립트 로직 생략 - 변경 없이 그대로 사용하시면 됩니다)
 const items = ["head", "ring", "reef", "shoes", "clam"];
 const TM_URL = "https://teachablemachine.withgoogle.com/models/aJunoRGQ4/";
 const GLOBAL_ROTATION = -Math.PI / 2; 
@@ -323,8 +328,6 @@ function startPeel() {
   setTimeout(() => {
     document.getElementById("loading").classList.add("hidden");
     modelGroup.userData.autoRotate = false;
-    
-    // [중요] 모든 회전을 0으로 리셋하고, 물체 내부 모델은 GLOBAL_ROTATION으로 고정하여 정면 응시
     modelGroup.rotation.y = 0; 
     normalModel.rotation.y = GLOBAL_ROTATION;
     skinModel.rotation.y = GLOBAL_ROTATION;
