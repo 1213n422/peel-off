@@ -27,7 +27,7 @@
         font-style: normal;
     }
 
-    .help-list li, .guide-text, #loading div, .info-content p {
+    .help-list li, .guide-text, #loading div, .info-content p, .info-content span {
         font-family: "Cute Font", sans-serif !important;
         font-weight: 400 !important;
         letter-spacing: 0.15rem; 
@@ -102,13 +102,11 @@
     #helpBtn { right: 3rem; width: 3.2rem; height: 3.2rem; border-radius: 50%; font-size: 1.8rem; }
 
     .info-screen { z-index: 900; text-align: center; color: white; background-color: rgba(0,0,0,0.92) !important; }
-    /* About 텍스트 3줄 유지를 위해 너비 소폭 조정 */
     .info-content { width: 85%; max-width: 950px; }
     .info-content h2 { font-size: 3.5rem; margin-bottom: 2rem; border-bottom: 1px dashed rgba(255,255,255,0.4); padding-bottom: 1rem; color: #ffffff; }
     .info-content p { font-size: 2.3rem; line-height: 1.6; margin-bottom: 1.5rem; word-break: keep-all; color: #ffffff; }
     .tool-tag { display: inline-block; background: rgba(255,255,255,0.1); padding: 0.2rem 1rem; border-radius: 0.5rem; margin: 0.3rem; font-size: 1.8rem; border: 1px dashed rgba(255,255,255,0.3); }
 
-    /* 도움말 텍스트 크기 줄임 */
     .help-list { font-size: 2.2rem; list-style: none; padding: 0; line-height: 2; color: #ffffff; }
     .help-list li { margin-bottom: 0.8rem; }
 
@@ -119,7 +117,7 @@
     .guide-overlay { width: 40vw; height: 40vw; max-width: 650px; max-height: 650px; border: 3px dotted rgba(255,255,255,0.7); border-radius: 2rem; position: relative; }
     .guide-text { color: white; font-size: 3rem; margin-bottom: 3rem; text-shadow: 0 0 15px rgba(0,0,0,0.8); }
 
-    /* 로딩 애니메이션 (꿀렁거리는 모션 구현) */
+    /* 로딩 애니메이션 높이 조절 */
     .loader { display: flex; gap: 1.5rem; margin-top: 4rem; }
     .loader span { width: 1.5rem; height: 1.5rem; background: white; border-radius: 50%; animation: loading-wave 1.2s infinite ease-in-out; }
     .loader span:nth-child(2) { animation-delay: 0.1s; }
@@ -129,7 +127,7 @@
     
     @keyframes loading-wave {
         0%, 100% { transform: translateY(0); opacity: 0.3; }
-        50% { transform: translateY(-2.5rem); opacity: 1; }
+        50% { transform: translateY(-1.2rem); opacity: 1; }
     }
 
     .slider { display: flex; align-items: center; gap: 5vw; margin-top: 5vh; }
@@ -154,7 +152,7 @@
 <div id="aboutScreen" class="screen info-screen hidden">
     <div class="info-content">
         <h2 class="eng-font">About the Work</h2>
-        <p>'Peel-off'는 탈피라는 생물학적 현상을 디지털 환경에서 재해석한 인터랙티브 미디어 아트입니다. 사용자는 실물 카드를 매개로 가상의 공간에서 탈피를 체험하며, 이 과정을 반복함으로써 시간의 흐름과 변화의 순간을 관찰합니다.</p>
+        <p><span class="eng-font">Peel-off</span>는 탈피라는 생물학적 현상을 디지털 환경에서 재해석한 인터랙티브 미디어 아트입니다. 사용자는 실물 카드를 매개로 가상의 공간에서 탈피를 체험하며, 이 과정을 반복함으로써 시간의 흐름과 변화의 순간을 관찰합니다.</p>
         <button class="custom-btn" onclick="toggleInfo('about')" style="margin-top: 2rem;">Back</button>
     </div>
 </div>
@@ -163,9 +161,9 @@
     <div class="info-content">
         <h2 class="eng-font">Technical Tools</h2>
         <div style="margin-top: 2rem;">
-            <p><span class="eng-font">AI & Data:</span> <span class="tool-tag">Gemini</span> <span class="tool-tag">Teachable Machine</span></p>
-            <p><span class="eng-font">3D & Graphic:</span> <span class="tool-tag">Three.js</span> <span class="tool-tag">Tripo 3D</span></p>
-            <p><span class="eng-font">Development:</span> <span class="tool-tag">HTML5</span> <span class="tool-tag">CSS3</span> <span class="tool-tag">p5.js</span></p>
+            <p><span>AI & Data:</span> <span class="tool-tag">Gemini</span> <span class="tool-tag">Teachable Machine</span></p>
+            <p><span>3D & Graphic:</span> <span class="tool-tag">Three.js</span> <span class="tool-tag">Tripo 3D</span></p>
+            <p><span>Development:</span> <span class="tool-tag">HTML5</span> <span class="tool-tag">CSS3</span> <span class="tool-tag">p5.js</span></p>
         </div>
         <button class="custom-btn" onclick="toggleInfo('tools')" style="margin-top: 2rem;">Back</button>
     </div>
@@ -176,7 +174,7 @@
         <div style="font-size: 4rem; margin-bottom: 2rem; color: #ffffff;">How to Use</div>
         <ul class="help-list">
             <li><span class="cute-font-regular">1.</span> 화살표(<span class="eng-font">&lt;&lt;, &gt;&gt;</span>)를 클릭하여 이미지를 선택 후 <span class="eng-font eng-spacing">Select</span> 버튼을 누릅니다.</li>
-            <li><span class="cute-font-regular">2.</span> 선택한 이미지에 해당하는 그림 카드를 화면에 비춥니다.</li>
+            <li><span class="cute-font-regular">2.</span> 선택한 이미지에 해당하는 카드를 화면에 비춥니다.</li>
             <li><span class="cute-font-regular">3.</span> <span class="eng-font">3D</span> 이미지가 나오면 <span class="eng-font eng-spacing">Peel-off</span> 버튼을 누릅니다.</li>
             <li><span class="cute-font-regular">4.</span> 탈피가 끝나면 마우스로 돌려보며 새로워진 모습을 관찰합니다.</li>
             <li><span class="cute-font-regular">5.</span> 탈피를 반복하여 표피가 쌓여가는 것을 관찰합니다.</li>
@@ -201,7 +199,7 @@
     <video id="video" autoplay playsinline muted></video>
     <button id="mainBtn" onclick="goHome()">&lt;&lt; Main</button>
     <div id="guideContainer" class="screen" style="z-index: 2; background: none;">
-        <div class="guide-text">그림 카드를 점선 안에 맞춰주세요</div>
+        <div class="guide-text">이미지 카드를 점선 안에 맞춰주세요</div>
         <div class="guide-overlay"></div>
     </div>
     <div id="canvas-container"></div>
@@ -316,7 +314,6 @@ function next() { current = (current + 1) % items.length; updateSelection(); }
 updateSelection();
 
 function selectItem() {
-    // About, Tools 버튼은 숨기고 Help 버튼은 남겨둠
     document.getElementById("aboutBtn").classList.add("hidden");
     document.getElementById("toolsBtn").classList.add("hidden");
     
@@ -381,7 +378,6 @@ function show3DModel() {
 function startPeel() {
     const pBtn = document.getElementById("peelBtn");
     pBtn.classList.add("hidden");
-    // 로딩 중에는 도움말 버튼 숨김
     document.getElementById("helpBtn").classList.add("hidden");
     document.getElementById("loading").classList.remove("hidden");
 
