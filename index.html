@@ -21,16 +21,22 @@
   
   * { font-family: 'Mieszkanie', sans-serif !important; box-sizing: border-box; }
 
-  /* 요청하신 Cute Font 클래스 적용 */
+  /* 요청하신 얇은 스타일의 Cute Font 클래스 */
   .cute-font-regular {
     font-family: "Cute Font", sans-serif !important;
-    font-weight: 400;
+    font-weight: 400 !important;
     font-style: normal;
+  }
+
+  /* 도움말 내 한글, 숫자, 3D 폰트 및 크기 조정 */
+  .help-list li, .help-list span, .guide-text, #loading div {
+    font-family: "Cute Font", sans-serif !important;
+    font-weight: 400 !important;
   }
 
   .system-font { 
     font-family: "Cute Font", sans-serif !important;
-    font-weight: normal; 
+    font-weight: 400 !important;
     letter-spacing: 0.02rem;
   }
 
@@ -66,19 +72,18 @@
   
   #helpScreen { z-index: 500; text-align: center; color: white; }
   
-  /* 도움말 리스트 폰트 적용 */
-  .help-list { font-family: "Cute Font", sans-serif !important; font-size: 2.5rem; list-style: none; padding: 0; line-height: 2.4; }
+  /* 도움말 리스트 크기 및 줄간격 최적화 */
+  .help-list { font-size: 1.8rem; list-style: none; padding: 0; line-height: 2.0; }
   .help-list li { 
     margin-bottom: 0.5rem; 
-    letter-spacing: 0.12rem; 
-    word-spacing: -0.22rem;  
+    letter-spacing: 0.05rem; 
   }
 
   #mainBtn { position: absolute; top: 3rem; left: 3rem; background: none; border: none; color: white; font-size: 2.2rem; cursor: pointer; z-index: 110; }
   .arrow-btn { background: none; border: none; color: white; font-size: 5rem; cursor: pointer; padding: 0 2rem; }
   
   .guide-overlay { width: 40vw; height: 40vw; max-width: 650px; max-height: 650px; border: 3px dotted rgba(255,255,255,0.7); border-radius: 2rem; position: relative; }
-  .guide-text { font-family: "Cute Font", sans-serif !important; color: white; font-size: 3rem; margin-bottom: 2rem; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+  .guide-text { color: white; font-size: 2rem; margin-bottom: 2rem; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
 
   .loader { display: flex; gap: 1.2rem; margin-top: 4rem; }
   .loader span { 
@@ -151,7 +156,7 @@
 </div>
 
 <div id="loading" class="screen hidden">
-  <div class="cute-font-regular" style="font-size: 4rem; color: white;">탈피가 진행 중입니다...</div>
+  <div class="cute-font-regular" style="font-size: 2.5rem; color: white;">탈피가 진행 중입니다...</div>
   <div class="loader"><span></span><span></span><span></span><span></span><span></span></div>
 </div>
 
@@ -289,9 +294,9 @@ function show3DModel() {
     normalModel = g1.scene;
     normalModel.scale.set(3.7, 3.7, 3.7);
     
-    // 모델의 정면 보정: 보통 Y축을 180도(Math.PI) 또는 90도 돌려야 정면이 나옵니다. 
-    // 옆면이 보이던 상태에서 정면이 보이게 하기 위해 rotation.y를 설정합니다.
-    normalModel.rotation.y = Math.PI / 2; 
+    // 모델 정면 보정: 기존 Math.PI / 2 가 옆면이었다면, -Math.PI / 2 또는 0 으로 정면 보정
+    // 사용하시는 모델 파일이 뒷면이 기본이라면 아래처럼 -Math.PI / 2 로 설정하여 180도 회전시킵니다.
+    normalModel.rotation.y = -Math.PI / 2; 
     
     normalModel.visible = false; 
     modelGroup.add(normalModel);
@@ -299,14 +304,14 @@ function show3DModel() {
     loader.load(`${name}_old-v1.glb`, (g2) => {
       oldModel = g2.scene;
       oldModel.scale.set(3.7, 3.7, 3.7);
-      oldModel.rotation.y = Math.PI / 2; // 보정된 각도 적용
+      oldModel.rotation.y = -Math.PI / 2; 
       oldModel.visible = true; 
       modelGroup.add(oldModel);
 
       loader.load(`${name}_skin-v1.glb`, (g3) => {
         skinModel = g3.scene;
         skinModel.scale.set(3.7, 3.7, 3.7);
-        skinModel.rotation.y = Math.PI / 2; // 보정된 각도 적용
+        skinModel.rotation.y = -Math.PI / 2; 
         skinModel.visible = false;
         scene.add(skinModel); 
         modelGroup.userData.autoRotate = true;
