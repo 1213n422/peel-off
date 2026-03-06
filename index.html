@@ -27,11 +27,17 @@
     font-style: normal;
   }
 
-  /* 1. 도움말 및 가이드 텍스트 자간 대폭 확대 (0.15rem) */
   .help-list li, .guide-text, #loading div {
     font-family: "Cute Font", sans-serif !important;
     font-weight: 400 !important;
     letter-spacing: 0.15rem; 
+  }
+
+  /* 도움말 내 Select, Peel-off 등 특정 영문 자간 강조 */
+  .eng-spacing {
+    letter-spacing: 0.3rem !important;
+    font-weight: bold;
+    display: inline-block;
   }
 
   .eng-font {
@@ -78,11 +84,8 @@
   .arrow-btn { background: none; border: none; color: white; font-size: 5rem; cursor: pointer; padding: 0 2rem; }
   
   .guide-overlay { width: 40vw; height: 40vw; max-width: 650px; max-height: 650px; border: 3px dotted rgba(255,255,255,0.7); border-radius: 2rem; position: relative; }
-  
-  /* 2. 가이드 문구 폰트 사이즈 키움 (3rem) */
   .guide-text { color: white; font-size: 3rem; margin-bottom: 3rem; text-shadow: 0 0 15px rgba(0,0,0,0.8); }
 
-  /* 3. 로딩 점 꿀렁거리는 모션 (Wave 효과) */
   .loader { display: flex; gap: 1.5rem; margin-top: 4rem; }
   .loader span { 
     width: 1.5rem; height: 1.5rem; 
@@ -90,7 +93,6 @@
     opacity: 0.3; 
     animation: loading-wave 1.2s infinite ease-in-out; 
   }
-  /* 각 점에 시간차를 주어 순차적으로 꿀렁거리게 함 */
   .loader span:nth-child(2) { animation-delay: 0.1s; }
   .loader span:nth-child(3) { animation-delay: 0.2s; }
   .loader span:nth-child(4) { animation-delay: 0.3s; }
@@ -119,9 +121,9 @@
   <div style="width: 85%;">
     <div style="font-size: 4rem; margin-bottom: 2rem;">How to Use</div>
     <ul class="help-list">
-      <li><span class="cute-font-regular">1.</span> 화살표(<span class="eng-font">&lt;&lt;, &gt;&gt;</span>)를 클릭하여 이미지를 선택 후 <span class="eng-font">Select</span> 버튼을 누릅니다.</li>
+      <li><span class="cute-font-regular">1.</span> 화살표(<span class="eng-font">&lt;&lt;, &gt;&gt;</span>)를 클릭하여 이미지를 선택 후 <span class="eng-font eng-spacing">Select</span> 버튼을 누릅니다.</li>
       <li><span class="cute-font-regular">2.</span> 선택한 이미지에 해당하는 그림 카드를 화면에 비춥니다.</li>
-      <li><span class="cute-font-regular">3.</span> <span class="cute-font-regular">3D</span> 이미지가 나오면 <span class="eng-font">Peel-off</span> 버튼을 누릅니다.</li>
+      <li><span class="cute-font-regular">3.</span> <span class="cute-font-regular">3D</span> 이미지가 나오면 <span class="eng-font eng-spacing">Peel-off</span> 버튼을 누릅니다.</li>
       <li><span class="cute-font-regular">4.</span> 탈피가 끝나면 마우스로 돌려보며 새로워진 모습을 관찰합니다.</li>
       <li><span class="cute-font-regular">5.</span> 탈피를 반복하여 표피가 쌓여가는 것을 관찰합니다.</li>
     </ul>
@@ -160,7 +162,6 @@
 </div>
 
 <script>
-// (스크립트 부분은 로직 변경이 없으므로 이전과 동일하게 유지됩니다)
 const items = ["head", "ring", "reef", "shoes", "clam"];
 const TM_URL = "https://teachablemachine.withgoogle.com/models/aJunoRGQ4/";
 const GLOBAL_ROTATION = -Math.PI / 2; 
@@ -322,11 +323,13 @@ function startPeel() {
   setTimeout(() => {
     document.getElementById("loading").classList.add("hidden");
     modelGroup.userData.autoRotate = false;
+    
+    // [중요] 모든 회전을 0으로 리셋하고, 물체 내부 모델은 GLOBAL_ROTATION으로 고정하여 정면 응시
     modelGroup.rotation.y = 0; 
+    normalModel.rotation.y = GLOBAL_ROTATION;
+    skinModel.rotation.y = GLOBAL_ROTATION;
     
     skinModel.position.set(0, 0, 0);
-    skinModel.rotation.set(0, GLOBAL_ROTATION, 0); 
-    
     skinModel.visible = true;
     setOpacity(skinModel, 0.6);
     oldModel.visible = false;
