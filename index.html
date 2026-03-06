@@ -21,30 +21,23 @@
   
   * { font-family: 'Mieszkanie', sans-serif !important; box-sizing: border-box; }
 
-  /* 얇은 스타일의 Cute Font 클래스 */
   .cute-font-regular {
     font-family: "Cute Font", sans-serif !important;
     font-weight: 400 !important;
     font-style: normal;
   }
 
-  /* 도움말 및 가이드 텍스트 폰트 설정 */
+  /* 도움말 본문 자간 살짝 늘림 (0.08rem) */
   .help-list li, .guide-text, #loading div {
     font-family: "Cute Font", sans-serif !important;
     font-weight: 400 !important;
+    letter-spacing: 0.08rem;
   }
 
-  /* 도움말 내부 영문 및 기호 전용 폰트 (Mieszkanie) */
   .eng-font {
     font-family: 'Mieszkanie', sans-serif !important;
     font-weight: normal !important;
     letter-spacing: 0.05rem;
-  }
-
-  .system-font { 
-    font-family: "Cute Font", sans-serif !important;
-    font-weight: 400 !important;
-    letter-spacing: 0.02rem;
   }
 
   html { font-size: 1vw; } 
@@ -79,14 +72,16 @@
   
   #helpScreen { z-index: 500; text-align: center; color: white; }
   .help-list { font-size: 1.8rem; list-style: none; padding: 0; line-height: 2.0; }
-  .help-list li { margin-bottom: 0.5rem; letter-spacing: 0.05rem; }
+  .help-list li { margin-bottom: 0.5rem; }
 
   #mainBtn { position: absolute; top: 3rem; left: 3rem; background: none; border: none; color: white; font-size: 2.2rem; cursor: pointer; z-index: 110; }
   .arrow-btn { background: none; border: none; color: white; font-size: 5rem; cursor: pointer; padding: 0 2rem; }
   
   .guide-overlay { width: 40vw; height: 40vw; max-width: 650px; max-height: 650px; border: 3px dotted rgba(255,255,255,0.7); border-radius: 2rem; position: relative; }
-  .guide-text { color: white; font-size: 2rem; margin-bottom: 2rem; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+  /* 가이드 문구 크기 확대 (2.5rem) */
+  .guide-text { color: white; font-size: 2.5rem; margin-bottom: 2rem; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
 
+  /* 로딩 점 꿀렁거리는 모션 복구 */
   .loader { display: flex; gap: 1.2rem; margin-top: 4rem; }
   .loader span { 
     width: 1.2rem; height: 1.2rem; 
@@ -94,10 +89,14 @@
     opacity: 0.3; 
     animation: wave 1.4s infinite ease-in-out; 
   }
+  .loader span:nth-child(2) { animation-delay: 0.2s; }
+  .loader span:nth-child(3) { animation-delay: 0.4s; }
+  .loader span:nth-child(4) { animation-delay: 0.6s; }
+  .loader span:nth-child(5) { animation-delay: 0.8s; }
   
   @keyframes wave {
-    0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
-    40% { transform: translateY(-1.2rem) scale(1.2); opacity: 1; }
+    0%, 100% { transform: translateY(0); opacity: 0.3; }
+    40% { transform: translateY(-1.5rem); opacity: 1; }
   }
 
   .slider { display: flex; align-items: center; gap: 5vw; margin-top: 5vh; }
@@ -319,10 +318,9 @@ function startPeel() {
     document.getElementById("loading").classList.add("hidden");
     modelGroup.userData.autoRotate = false;
     
-    // 모델 본체와 표피 모두를 처음의 정면(GLOBAL_ROTATION) 상태로 강제 리셋
-    modelGroup.rotation.y = 0; // Group의 추가 회전을 초기화
+    // 정면(GLOBAL_ROTATION) 상태로 강제 리셋
+    modelGroup.rotation.y = 0; 
     
-    // skinModel도 처음 로드 시 설정한 GLOBAL_ROTATION 상태 그대로 정렬
     skinModel.position.set(0, 0, 0);
     skinModel.rotation.set(0, GLOBAL_ROTATION, 0); 
     
