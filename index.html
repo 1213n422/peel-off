@@ -102,17 +102,16 @@
     #helpBtn { right: 3rem; width: 3.2rem; height: 3.2rem; border-radius: 50%; font-size: 1.8rem; }
 
     .info-screen { z-index: 900; text-align: center; color: white; background-color: rgba(0,0,0,0.92) !important; }
-    .info-content { width: 90%; max-width: 950px; }
+    .info-content { width: 95%; max-width: 1200px; }
     .info-content h2 { font-size: 3.5rem; margin-bottom: 2rem; border-bottom: 1px dashed rgba(255,255,255,0.4); padding-bottom: 1rem; color: #ffffff; }
     
-    /* About 본문: 아이맥에서도 3줄을 넘지 않도록 가로폭을 더 타이트하게 조정 */
     .info-content p { 
         font-size: 2.1rem; 
         line-height: 1.4; 
         margin: 0 auto 1.5rem auto; 
         word-break: keep-all; 
         color: #ffffff; 
-        max-width: 700px; 
+        max-width: 1000px; 
         text-align: center;
     }
     
@@ -162,7 +161,7 @@
 <div id="aboutScreen" class="screen info-screen hidden">
     <div class="info-content">
         <h2 class="eng-font">About the Work</h2>
-        <p><span style="font-family: 'Mieszkanie', sans-serif !important;">Peel-off</span>는 탈피라는 생물학적 현상을 디지털 환경에서 재해석한 인터랙티브 미디어 아트입니다. 실물 카드를 매개로 가상의 공간에서 탈피를 체험하며 시간의 흐름과 변화를 관찰합니다.</p>
+        <p><span style="font-family: 'Mieszkanie', sans-serif !important;">Peel-off</span>는 탈피라는 생물학적 현상을 디지털 환경에서 재해석한 인터랙티브 미디어 아트입니다. <br> 실물 카드를 매개로 가상의 공간에서 탈피를 체험하며 시간의 흐름과 변화를 관찰합니다.</p>
         <button class="custom-btn" onclick="toggleInfo('about')" style="margin-top: 2rem;">Back</button>
     </div>
 </div>
@@ -173,7 +172,8 @@
         <div style="margin-top: 2rem;">
             <p><span>AI & Data:</span> <span class="tool-tag">Gemini</span> <span class="tool-tag">Teachable Machine</span></p>
             <p><span>3D & Graphic:</span> <span class="tool-tag">Three.js</span> <span class="tool-tag">Tripo 3D</span></p>
-            <p><span>Development:</span> <span class="tool-tag">HTML5</span> <span class="tool-tag">CSS3</span> <span class="tool-tag">JavaScript</span></p> </div>
+            <p><span>Development:</span> <span class="tool-tag">HTML5</span> <span class="tool-tag">CSS3</span> <span class="tool-tag">JavaScript</span></p> 
+        </div>
         <button class="custom-btn" onclick="toggleInfo('tools')" style="margin-top: 2rem;">Back</button>
     </div>
 </div>
@@ -278,24 +278,23 @@ function animate() {
     if (renderer) renderer.render(scene, camera);
 }
 
-// Teachable Machine 인식 로직 최적화
 async function predictLoop() {
     if (isRecognized) return;
     const video = document.getElementById("video");
     if (tmModel && video.readyState === 4) {
-        // 비디오 미러링 등에 관계없이 픽셀 데이터를 정확히 읽어오기 위해 flip 속성 처리
         const prediction = await tmModel.predict(video);
         let highest = { className: "", probability: 0 };
         for (let i = 0; i < prediction.length; i++) {
             if (prediction[i].probability > highest.probability) highest = prediction[i];
         }
         
-        const target = items[current] + "_old";
-        // 임계값을 0.98로 소폭 완화하여 인식 안정성 확보
-        if (highest.className === target && highest.probability > 0.98) {
+        // reef 인식을 위해 className 비교 로직 강화 및 임계값 소폭 조정
+        const target = (items[current] + "_old").trim();
+        const detected = highest.className.trim();
+
+        if (detected === target && highest.probability > 0.96) {
             recognitionCounter++;
-            // 30프레임(약 0.5초) 동안 유지되면 바로 모델 표시
-            if (recognitionCounter > 30) {
+            if (recognitionCounter > 20) {
                 isRecognized = true;
                 show3DModel();
                 return;
